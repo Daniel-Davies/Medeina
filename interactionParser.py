@@ -4,6 +4,7 @@ import pickle
 from os import path
 import pathlib
 import pandas as pd
+from collections import defaultdict
 
 def saveNewData(parsedSpecificationString):
     dataPath = parsedSpecificationString['path']
@@ -23,6 +24,8 @@ def handlePairwiseInteractions(dataPath,head,tail):
     prey = assignUniqueIdsToSpecies(df[tail].values.tolist())
     
     writeInteractionsToDataStore(predators,prey)
+    writeTaxonomicInformation(predators)
+    # writeTaxonomicInformation(prey)
 
 def readPairwiseContentAsDataFrame(dataPath):
     fileType = (pathlib.Path(dataPath).suffix[1:]) 
@@ -48,6 +51,7 @@ def assignUniqueIdsToSpecies(species):
         else:
             changeDetected = True
             stringNames[s] = len(stringNames) + 1
+            idList.append(stringNames[s])
     
     with open(f'{BASEDIR}/{REALNAMES}','wb') as fh:
         pickle.dump(stringNames,fh)
@@ -58,11 +62,44 @@ def writeInteractionsToDataStore(predators,prey):
     with open(f'{BASEDIR}/{WEB}','rb') as f:
         existingWeb = pickle.load(f)
 
+    currentLinkId = existingWeb[IDTRACKER]
     for i in range(len(predators)):
         if predators[i] not in existingWeb:
-            existingWeb[predators[i]] = set()
+            existingWeb[predators[i]] = defaultdict(list)
         
-        existingWeb[predators[i]].add(prey[i])
+        ((existingWeb[predators[i]])[prey[i]]).append(currentLinkId)
+        currentLinkId += 1
+    
+    existingWeb[IDTRACKER] = currentLinkId
+    with open(f'{BASEDIR}/{WEB}','wb') as f:
+        pickle.dump(existingWeb,f) 
+
+def writeTaxonomicInformation(species):
+    politenessLimiter = 100
+
+    toProcess = determineTaxonomicGaps(species)
+    for i in range(0,len(toProcess),politenessLimiter):
+        apiString = "|".join(toProcess[i:i+politenessLimiter])
+        url = "http://resolver.globalnames.org/name_resolvers.json"
+        callToValidateName = requests.get(f'{url}?names={apiString}')
+        jsonRes = callToValidateName.json()
+        
+def determineTaxonomicGaps(species):
+    with open(f'{BASEDIR}/{TAXA}','rb') as f:
+        existingTaxaData = pickle.load(f)
+    
+    with open(f'{BASEDIR}/{REALNAMES}','rb') as f:
+        stringNameMapper = pickle.load(f)
+
+    invStringMapper = {v: k for k, v in stringNameMapper.items()}
+    
+    species = list(set(species))
+    toProcess = []
+    for s in species:
+        if s not in existingTaxaData:
+            toProcess.append(invStringMapper[s])
+    
+    return toProcess
 
 def createNewDatasetRecord(interactionType):
     with open(f'{BASEDIR}/{DATASETS}','rb') as fh:
