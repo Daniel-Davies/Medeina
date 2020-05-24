@@ -15,6 +15,7 @@ def cleanSingleSpeciesString(species):
     species = re.sub(r'\[.*?\]', '', species)
     species = re.sub('[\W_]+ ',' ', species)
     species = re.sub(' +', ' ', species)
+    species = species.lower()
     species = extractEcologicalFlags(species)
     species = species.lower()
     return species
@@ -23,6 +24,8 @@ def extractEcologicalFlags(species):
     parser = TaxonParser(species)
     try: 
         parsed_name = parser.parse()
+        if parsed_name.genus == "?":
+            return parsed_name.specificEpithet + " " + parsed_name.infraspecificEpithet
         if not parsed_name.isTrinomial():
             species = parsed_name.genus + " " + parsed_name.getTerminalEpithet()
         else:
@@ -30,5 +33,3 @@ def extractEcologicalFlags(species):
         return species
     except:
         return ''
-
-print(cleanSingleSpeciesString("tundus jun mendosa"))
