@@ -26,5 +26,4 @@ def readPairwiseContentAsDataFrame(dataPath):
     if fileType == 'csv':
         data = pd.read_csv(dataPath,engine='python')
     
-    data = cleanData(data)
     return data

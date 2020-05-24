@@ -1,9 +1,11 @@
 import re
 from taxon_parser import TaxonParser, UnparsableNameException
 
-
 def cleanHeadTailTupleData(headTailTuples):
-    return list(map(cleanSingleTuple,headTailTuples))
+    return list(filter(containsEmpty,map(cleanSingleTuple,headTailTuples)))
+
+def containsEmpty(tup):
+    return not(len(tup[0]) == 0 or len(tup[1]) == 0)
 
 def cleanSingleTuple(tup):
     return (cleanSingleSpeciesString(tup[0]),cleanSingleSpeciesString(tup[1]))
@@ -16,11 +18,11 @@ def cleanSingleSpeciesString(species):
     species = re.sub('[\W_]+ ',' ', species)
     species = re.sub(' +', ' ', species)
     species = species.lower()
-    species = extractEcologicalFlags(species)
+    species = cleanNomenclatureFlags(species)
     species = species.lower()
     return species
 
-def extractEcologicalFlags(species):
+def cleanNomenclatureFlags(species):
     parser = TaxonParser(species)
     try: 
         parsed_name = parser.parse()
@@ -31,5 +33,5 @@ def extractEcologicalFlags(species):
         else:
             species = parsed_name.genus + " " + parsed_name.specificEpithet
         return species
-    except:
+    except Exception as e:
         return ''
