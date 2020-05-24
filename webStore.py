@@ -8,7 +8,14 @@ class WebStore:
     def __init__(self):
         requiredFiles = [DATASETS,WEB,TAXA,CONFIDENCE,LINKS,EXCEPTIONS,REALNAMES]
         for file_ in requiredFiles: self.assureExistence(file_) 
+        self.initialiseLinkIdTracker()
 
+    def assureExistence(self,file_):
+        if not path.exists(f'{BASEDIR}/{file_}'):
+            with open(f'{BASEDIR}/{file_}','wb') as fh:
+                pickle.dump({},fh)
+    
+    def initialiseLinkIdTracker(self):
         changeDetected = False
         with open(f'{BASEDIR}/{WEB}','rb') as fh:
             existingWeb = pickle.load(fh)
@@ -19,11 +26,6 @@ class WebStore:
         if changeDetected:
             with open(f'{BASEDIR}/{WEB}','wb') as fh:
                 pickle.dump(existingWeb,fh)
-
-    def assureExistence(self,file_):
-        if not path.exists(f'{BASEDIR}/{file_}'):
-            with open(f'{BASEDIR}/{file_}','wb') as fh:
-                pickle.dump({},fh)
 
     def add_interactions(self,jsonFormattedSpecificationString):
         parsedSpecificationString = json.loads(jsonFormattedSpecificationString)
