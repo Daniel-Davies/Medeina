@@ -96,7 +96,7 @@ def parseSingleTaxonomyFromAPI(taxonomicAPIres):
     
 def extractTaxaData(singleTaxaSource):
     mappingDict = {}
-    try: mappingDict = dict(zip(singleTaxaSource['classification_path_ranks'].lower().split("|"), \ 
+    try: mappingDict = dict(zip(singleTaxaSource['classification_path_ranks'].lower().split("|"),\
                                 singleTaxaSource['classification_path'].lower().split("|")))
     except: pass
     return mappingDict
