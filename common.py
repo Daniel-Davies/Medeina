@@ -3,12 +3,12 @@ from config import *
 import itertools
 import operator 
 
-def writeObjToDateStore(name,obj):
-    with open(f'{BASEDIR}/{name}','wb') as fh:
+def writeObjToDateStore(directory,name,obj):
+    with open(f'{directory}/{name}','wb') as fh:
         pickle.dump(obj,fh)
 
-def retrieveObjFromStore(name):
-    with open(f'{BASEDIR}/{name}','rb') as fh:
+def retrieveObjFromStore(directory,name):
+    with open(f'{directory}/{name}','rb') as fh:
         existing = pickle.load(fh)
     
     return existing

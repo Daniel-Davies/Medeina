@@ -13,32 +13,32 @@ from dataFormatReaders import parseSpeciesInteractionCells
 def saveNewData(parsedSpecificationString):
     dId = createNewDatasetRecord(parsedSpecificationString)
     stringHeadTailData = parseSpeciesInteractionCells(parsedSpecificationString) #(predator,prey,meta)
-    standardHeadTailData = createAndStoreSpeciesIds(stringHeadTailData)
-    writeLinksToDataStore(standardHeadTailData,dId)
-    writeTaxonomicInformationToDataStore(itertools.chain(*keepInteractionPartOnly(standardHeadTailData)))
+    standardHeadTailData = createAndStoreSpeciesIds(stringHeadTailData,parsedSpecificationString['storageLocation'])
+    writeLinksToDataStore(standardHeadTailData,dId,parsedSpecificationString['storageLocation'])
+    writeTaxonomicInformationToDataStore(itertools.chain(*keepInteractionPartOnly(standardHeadTailData)),parsedSpecificationString['storageLocation'])
 
 def createNewDatasetRecord(parsedSpecificationString):
     datasetMeta = takeDatasetMetaData(parsedSpecificationString)
-    existing = retrieveObjFromStore(DATASETS)
+    existing = retrieveObjFromStore(parsedSpecificationString['storageLocation'], DATASETS)
     newId = len(existing) + 1
     existing[newId] = datasetMeta
-    writeObjToDateStore(DATASETS,existing)
+    writeObjToDateStore(parsedSpecificationString['storageLocation'],DATASETS,existing)
     return newId
 
 def takeDatasetMetaData(parsedSpecificationString):
     return {item: parsedSpecificationString[item] for item in DATASET_METAS if item in parsedSpecificationString}
 
-def createAndStoreSpeciesIds(stringHeadTailData):
+def createAndStoreSpeciesIds(stringHeadTailData,directory):
     headTailOnly = keepInteractionPartOnly(stringHeadTailData)
-    speciesMapping = assignAndStoreUniqueIdsOfSpecies(itertools.chain(*headTailOnly))
+    speciesMapping = assignAndStoreUniqueIdsOfSpecies(itertools.chain(*headTailOnly),directory)
     return list(map(lambda x: (speciesMapping[x[0]], speciesMapping[x[1]], x[2]),stringHeadTailData))
 
 def keepInteractionPartOnly(headTailDataWMeta):
     return list(map(lambda tup: (tup[0],tup[1]),headTailDataWMeta))
 
-def writeLinksToDataStore(consumableData,dId):
-    existingWeb = retrieveObjFromStore(WEB)
-    existingLinks = retrieveObjFromStore(LINKS)
+def writeLinksToDataStore(consumableData,dId,directory):
+    existingWeb = retrieveObjFromStore(directory,WEB)
+    existingLinks = retrieveObjFromStore(directory,LINKS)
     currentLinkId = existingWeb[IDTRACKER]
 
     for predator, prey, meta in consumableData:
@@ -50,16 +50,16 @@ def writeLinksToDataStore(consumableData,dId):
         currentLinkId += 1
     
     existingWeb[IDTRACKER] = currentLinkId
-    writeObjToDateStore(WEB, existingWeb)
-    writeObjToDateStore(LINKS, existingLinks)
+    writeObjToDateStore(directory, WEB, existingWeb)
+    writeObjToDateStore(directory, LINKS, existingLinks)
 
-def writeTaxonomicInformationToDataStore(species):
-    toProcess, existingTaxaData, stringNameMapper = determineTaxonomicGaps(species)
+def writeTaxonomicInformationToDataStore(species,directory):
+    toProcess, existingTaxaData, stringNameMapper = determineTaxonomicGaps(directory,species)
     for i in range(0,len(toProcess),APIMAX):
         print("Indexing records " + str(i) + " to " + str(min(len(toProcess),i+APIMAX)) + " [of "+str(len(toProcess))+"]")
         jsonRes = callAPIOnDataList(toProcess[i:i+APIMAX])
         storeTaxaFromAPI(jsonRes,existingTaxaData,stringNameMapper)      
-    writeObjToDateStore(TAXA, existingTaxaData)
+    writeObjToDateStore(directory, TAXA, existingTaxaData)
 
 def callAPIOnDataList(speciesNamesList):
     apiString = "|".join(speciesNamesList)
@@ -80,20 +80,20 @@ def handleSpeciesNameFailure(individualResult):
         try: print("Did you mean " + str(individualResult['results'][0]['canonical_form']) + "?")
         except: pass
 
-def assignAndStoreUniqueIdsOfSpecies(species):
-    stringNames = retrieveObjFromStore(REALNAMES)
+def assignAndStoreUniqueIdsOfSpecies(species,directory):
+    stringNames = retrieveObjFromStore(directory,REALNAMES)
     changeDetected = False    
     for s in species:
         if s not in stringNames:
             changeDetected = True
             stringNames[s] = len(stringNames) + 1
     
-    if changeDetected: writeObjToDateStore(REALNAMES, stringNames)
+    if changeDetected: writeObjToDateStore(directory, REALNAMES, stringNames)
     return stringNames
     
-def determineTaxonomicGaps(species):
-    existingTaxaData = retrieveObjFromStore(TAXA)
-    stringNameMapper = retrieveObjFromStore(REALNAMES)
+def determineTaxonomicGaps(directory,species):
+    existingTaxaData = retrieveObjFromStore(directory,TAXA)
+    stringNameMapper = retrieveObjFromStore(directory,REALNAMES)
     invStringMapper = {v: k for k, v in stringNameMapper.items()}
     species = list(set(species))
     toProcess = []

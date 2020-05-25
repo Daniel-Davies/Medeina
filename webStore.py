@@ -8,31 +8,33 @@ from exportTools import denormaliseData
 import csv
 
 class WebStore:
-    def __init__(self):
+    def __init__(self,storePath=BASEDIR):
+        self.storePath = storePath
         requiredFiles = [DATASETS,WEB,TAXA,LINKS,EXCEPTIONS,REALNAMES]
         for file_ in requiredFiles: self.assureExistence(file_) 
         self.initialiseLinkIdTracker()
 
     def assureExistence(self,file_):
-        if not path.exists(f'{BASEDIR}/{file_}'):
-            with open(f'{BASEDIR}/{file_}','wb') as fh:
+        if not path.exists(f'{self.storePath}/{file_}'):
+            with open(f'{self.storePath}/{file_}','wb') as fh:
                 pickle.dump({},fh)
     
     def initialiseLinkIdTracker(self):
         changeDetected = False
-        with open(f'{BASEDIR}/{WEB}','rb') as fh:
+        with open(f'{self.storePath}/{WEB}','rb') as fh:
             existingWeb = pickle.load(fh)
             if IDTRACKER not in existingWeb:
                 existingWeb[IDTRACKER] = 0
                 changeDetected = True 
         
         if changeDetected:
-            with open(f'{BASEDIR}/{WEB}','wb') as fh:
+            with open(f'{self.storePath}/{WEB}','wb') as fh:
                 pickle.dump(existingWeb,fh)
 
     def add_interactions(self,userIn):
         jsonFormattedSpecificationString = self.parseUserInputToStandardJsonString(userIn) 
         parsedSpecificationString = json.loads(jsonFormattedSpecificationString)
+        parsedSpecificationString['storageLocation'] = self.storePath
         saveNewData(parsedSpecificationString)
 
     def parseUserInputToStandardJsonString(self,userIn):
