@@ -8,34 +8,48 @@ import requests
 import itertools
 import operator 
 from common import writeObjToDateStore, retrieveObjFromStore, mostCommonInList
-from dataFormatReaders import handleFormatSpecificData
+from dataFormatReaders import parseSpeciesInteractionCells
 
 def saveNewData(parsedSpecificationString):
     dId = createNewDatasetRecord(parsedSpecificationString)
-    standardHeadTailData = parseAndStoreSpeciesData(parsedSpecificationString)
+    stringHeadTailData = parseSpeciesInteractionCells(parsedSpecificationString) #(predator,prey,meta)
+    standardHeadTailData = createAndStoreSpeciesIds(stringHeadTailData)
     writeLinksToDataStore(standardHeadTailData,dId)
-    writeTaxonomicInformationToDataStore(itertools.chain(*standardHeadTailData))
+    writeTaxonomicInformationToDataStore(itertools.chain(*keepInteractionPartOnly(standardHeadTailData)))
 
-def parseAndStoreSpeciesData(parsedSpecificationString):
-    stringHeadTailData = handleFormatSpecificData(parsedSpecificationString)
-    speciesMapping = assignAndStoreUniqueIdsOfSpecies(itertools.chain(*stringHeadTailData))
-    return list(map(lambda x: (speciesMapping[x[0]], speciesMapping[x[1]]),stringHeadTailData))
+def createNewDatasetRecord(parsedSpecificationString):
+    datasetMeta = takeDatasetMetaData(parsedSpecificationString)
+    existing = retrieveObjFromStore(DATASETS)
+    newId = len(existing) + 1
+    existing[newId] = datasetMeta
+    writeObjToDateStore(DATASETS,existing)
+    return newId
+
+def takeDatasetMetaData(parsedSpecificationString):
+    return {item: parsedSpecificationString[item] for item in DATASET_METAS if item in parsedSpecificationString}
+
+def createAndStoreSpeciesIds(stringHeadTailData):
+    headTailOnly = keepInteractionPartOnly(stringHeadTailData)
+    speciesMapping = assignAndStoreUniqueIdsOfSpecies(itertools.chain(*headTailOnly))
+    return list(map(lambda x: (speciesMapping[x[0]], speciesMapping[x[1]], x[2]),stringHeadTailData))
+
+def keepInteractionPartOnly(headTailDataWMeta):
+    return list(map(lambda tup: (tup[0],tup[1]),headTailDataWMeta))
 
 def writeLinksToDataStore(consumableData,dId):
     existingWeb = retrieveObjFromStore(WEB)
     existingLinks = retrieveObjFromStore(LINKS)
-
     currentLinkId = existingWeb[IDTRACKER]
-    for predator, prey in consumableData:
-        if predator not in existingWeb:
-            existingWeb[predator] = defaultdict(list)
+
+    for predator, prey, meta in consumableData:
+        if predator not in existingWeb: existingWeb[predator] = defaultdict(list)
         
         existingWeb[predator][prey].append(currentLinkId)
-        existingLinks[currentLinkId] = [dId]
+        meta['dId'] = dId
+        existingLinks[currentLinkId] = meta
         currentLinkId += 1
     
     existingWeb[IDTRACKER] = currentLinkId
-
     writeObjToDateStore(WEB, existingWeb)
     writeObjToDateStore(LINKS, existingLinks)
 
@@ -117,14 +131,5 @@ def runConsensusOnSingleTaxa(taxaRank,individualDictionaryMappings):
     
     if len(allItemsOfTaxa) == 0: return ''
     return mostCommonInList(allItemsOfTaxa)
-    
-def createNewDatasetRecord(parsedSpecificationString):
-    interactionType = parsedSpecificationString['interactionType']
-    existing = retrieveObjFromStore(DATASETS)
-    newId = len(existing) + 1
-    existing[newId] = [interactionType]
-    writeObjToDateStore(DATASETS,existing)
-    return newId
-
 
     

@@ -8,7 +8,7 @@ def containsEmpty(tup):
     return not(len(tup[0]) == 0 or len(tup[1]) == 0)
 
 def cleanSingleTuple(tup):
-    return (cleanSingleSpeciesString(tup[0]),cleanSingleSpeciesString(tup[1]))
+    return (cleanSingleSpeciesString(tup[0]),cleanSingleSpeciesString(tup[1]),tup[2])
 
 def cleanSingleSpeciesString(species):
     species = species.replace("-"," ")
