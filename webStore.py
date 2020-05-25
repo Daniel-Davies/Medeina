@@ -42,9 +42,9 @@ class WebStore:
         if isinstance(userIn,dict): return json.dumps(userIn)
         raise ValueError('Please supply either a String or Dict type!')
     
-    def export_data(self,columns,datasets=[]):
+    def export_data(self,path,columns,datasets=[]):
         rowsByList, headings = denormaliseData(columns,datasets)
-        with open("out.csv", "w", newline="") as f:
+        with open(path+"/"+"out.csv", "w", newline="") as f:
             writer = csv.writer(f)
             writer.writerows([headings])
             writer.writerows(rowsByList)
