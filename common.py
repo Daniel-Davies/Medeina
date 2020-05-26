@@ -2,6 +2,8 @@ import pickle
 from config import *
 import itertools
 import operator 
+import json 
+import copy 
 
 def writeObjToDateStore(directory,name,obj):
     with open(f'{directory}/{name}','wb') as fh:
@@ -29,3 +31,6 @@ def mostCommonInList(L):
 def prettyPrintDict(dict_):
     for k, v in dict_.items():
         print(str(k) + " --- " + str(v))
+    
+def serialise(pythonObj):
+    return copy.deepcopy(pythonObj)

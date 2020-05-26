@@ -1,19 +1,27 @@
 from common import *
 from config import *
 from dataCleaning import cleanSingleSpeciesString
+from filterFunctions import *
 
 class Web:
-    def __init__(self,path=BASEDIR):
+    def __init__(self,path=BASEDIR,*args,**kwargs):
         self.storePath = path
-        self.interactions = retrieveObjFromStore(self.storePath,WEB)
-        self.taxaExceptions = retrieveObjFromStore(self.storePath,EXCEPTIONS)
-        self.taxa = retrieveObjFromStore(self.storePath,TAXA)
-        self.linkMetas = retrieveObjFromStore(self.storePath,LINKS)
-        self.datasetMetas = retrieveObjFromStore(self.storePath,DATASETS)
-        self.stringNames = retrieveObjFromStore(self.storePath,REALNAMES)
-
-    def sayHelloMedeina(self):
-        print("Hello")
+        if len(kwargs) == 0:
+            self.interactions = retrieveObjFromStore(self.storePath,WEB)
+            self.taxaExceptions = retrieveObjFromStore(self.storePath,EXCEPTIONS)
+            self.taxa = retrieveObjFromStore(self.storePath,TAXA)
+            self.linkMetas = retrieveObjFromStore(self.storePath,LINKS)
+            self.datasetMetas = retrieveObjFromStore(self.storePath,DATASETS)
+            self.stringNames = retrieveObjFromStore(self.storePath,REALNAMES)
+            self.logbook = []
+        else:
+            self.interactions = kwargs['interactions']
+            self.taxaExceptions = kwargs['taxaExceptions']
+            self.taxa = kwargs['taxa']
+            self.linkMetas = kwargs['linkMetas']
+            self.datasetMetas = kwargs['datasetMetas']
+            self.stringNames = kwargs['stringNames']
+            self.logbook = kwargs['logbook']
     
     def viewSessionTaxonomicExceptions(self):
         prettyPrintDict(self.taxaExceptions)
@@ -36,18 +44,46 @@ class Web:
 
         return species, consumer, resource
 
-    def filterByDatasetId():
-        pass
-    
-    def filterByTaxa():
+    def filterByDatasetId(self,dIds):
+        self.validateDIds(dIds)
+        self.logbook.append({'datasetIdFilter':dIds})
+        newWeb = self.replicateFoodWeb()
+        newWeb.datasetMetas = filterDatasetByDIds(self.datasetMetas,dIds)
+        newWeb.interactions = filterInteractionsByDIds(self.interactions,dIds)
+        newWeb.linkMetas = filterLinksMetasByDIds(self.linkMetas,dIds)
+        return newWeb
+        # filter all stuff (just interactions & datasets should do)
+
+    def validateDIds(self,dIds):
+        return dIds
+
+    def filterByTaxa(self):
         pass 
     
-    def filterByObservationType():
+    def filterByObservationType(self):
+        pass
+    
+    def replicateFoodWeb(self):
+        names = ['interactions','taxaExceptions','taxa','linkMetas','datasetMetas','stringNames','logbook']
+        newData = list(map(serialise,[self.interactions,self.taxaExceptions,self.taxa,self.linkMetas,self.datasetMetas,self.stringNames,self.logbook]))
+        kwargsDict = dict(zip(names,newData))
+        return Web(**kwargsDict)
+
+    def apply(self):
+        # Will probably need a new object?
+        pass 
+
+    def audit(self):
+        pass 
+    
+    def reIndex(self):
+        # essentially load everything again, and apply functions from the logbook
         pass
 
-    def apply():
-        pass 
+    def summarise(self):
+        print("Current Interaction Web has:")
+        print(str(countInteractionsInDict(self.interactions))+" interactions") 
+        
 
-    def audit():
-        pass 
-
+    def sayHelloMedeina(self):
+        print("Hello")
