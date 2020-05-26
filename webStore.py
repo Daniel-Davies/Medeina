@@ -31,10 +31,11 @@ class WebStore:
             with open(f'{self.storePath}/{WEB}','wb') as fh:
                 pickle.dump(existingWeb,fh)
 
-    def add_interactions(self,userIn):
+    def add_interactions(self,userIn,includeInvalid=True):
         jsonFormattedSpecificationString = self.parseUserInputToStandardJsonString(userIn) 
         parsedSpecificationString = json.loads(jsonFormattedSpecificationString)
         parsedSpecificationString['storageLocation'] = self.storePath
+        parsedSpecificationString['includeInvalid'] = includeInvalid
         saveNewData(parsedSpecificationString)
 
     def parseUserInputToStandardJsonString(self,userIn):
