@@ -25,3 +25,7 @@ def mostCommonInList(L):
       min_index = min(min_index, where)
     return count, -min_index
   return max(groups, key=_auxfun)[0]
+
+def prettyPrintDict(dict_):
+    for k, v in dict_.items():
+        print(str(k) + " --- " + str(v))
