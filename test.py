@@ -7,23 +7,23 @@ dct = {}
 dct['interactionType'] = 'trophic'
 dct['location'] = "Lake,Switzerland"
 
-# dct['encoding'] = {}
-# dct['encoding']['interactionFormat'] = 'pair'
-# dct['encoding']['head'] = 'consumer'
-# dct['encoding']['tail'] = 'resource'
-# dct['encoding']['evidencedBy'] = 'link.evidence'
-# dct['encoding']['path'] = "C:/Users/davie/Downloads/test.csv"
-
 dct['encoding'] = {}
-dct['encoding']['interactionFormat'] = 'matrix'
-dct['encoding']['headingCorner'] = '(3,2)'
-dct['encoding']['dataCorner'] = '(5,4)'
-dct['encoding']['nameDepth'] = 2
-dct['encoding']['metaData'] = [{'orientation': 'col', 'name': 'order', 'index':2 },{'orientation': 'row', 'name': 'ind', 'index':1 }]
-# dct['encoding']['head'] = 'consumer'
-# dct['encoding']['tail'] = 'resource'
-# dct['encoding']['evidencedBy'] = 'link.evidence'
-dct['encoding']['path'] = "C:/Users/davie/Desktop/Masters/Dissertation/Code/DissertationCode/Eigg/Utilities/RelevantDatasets/production/janePollinators.csv"
+dct['encoding']['interactionFormat'] = 'pair'
+dct['encoding']['head'] = 'con.taxonomy'
+dct['encoding']['tail'] = 'res.taxonomy'
+dct['encoding']['evidencedBy'] = 'link.methodology'
+dct['encoding']['path'] = "C:/Users/davie/Desktop/Masters/Dissertation/Code/DissertationCode/Eigg/Utilities/RelevantDatasets/production/2018GlobAL.csv"
+
+# dct['encoding'] = {}
+# dct['encoding']['interactionFormat'] = 'matrix'
+# dct['encoding']['headingCorner'] = '(3,2)'
+# dct['encoding']['dataCorner'] = '(5,4)'
+# dct['encoding']['nameDepth'] = 2
+# dct['encoding']['metaData'] = [{'orientation': 'col', 'name': 'order', 'index':2 },{'orientation': 'row', 'name': 'ind', 'index':1 }]
+# # dct['encoding']['head'] = 'consumer'
+# # dct['encoding']['tail'] = 'resource'
+# # dct['encoding']['evidencedBy'] = 'link.evidence'
+# dct['encoding']['path'] = "C:/Users/davie/Desktop/Masters/Dissertation/Code/DissertationCode/Eigg/Utilities/RelevantDatasets/production/janePollinators.csv"
 
 
 # jsonString = json.dumps(json.loads("{\"path\": \"C:/Users/davie/Downloads/test.csv\", \"interactionType\": \"trophic\", \"encoding\":{\"interactionFormat\":\"pair\", \"head\":\"consumer\",\"tail\":\"resource\" }}"))
