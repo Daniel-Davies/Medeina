@@ -5,6 +5,7 @@ import requests
 
 dct = {}
 dct['interactionType'] = 'trophic'
+dct['location'] = "Lake,Switzerland"
 
 # dct['encoding'] = {}
 # dct['encoding']['interactionFormat'] = 'pair'
@@ -18,7 +19,7 @@ dct['encoding']['interactionFormat'] = 'matrix'
 dct['encoding']['headingCorner'] = '(3,2)'
 dct['encoding']['dataCorner'] = '(5,4)'
 dct['encoding']['nameDepth'] = 2
-dct['encoding']['metaData'] = [{'orientation': 'col', 'name': 'order', 'index':2 }]
+dct['encoding']['metaData'] = [{'orientation': 'col', 'name': 'order', 'index':2 },{'orientation': 'row', 'name': 'ind', 'index':1 }]
 # dct['encoding']['head'] = 'consumer'
 # dct['encoding']['tail'] = 'resource'
 # dct['encoding']['evidencedBy'] = 'link.evidence'

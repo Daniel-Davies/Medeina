@@ -6,11 +6,11 @@ import re
 
 def parseSpeciesInteractionCells(parsedSpecificationString):
     graphType = parsedSpecificationString['encoding']
-    stringPairs = runAppropriateHandlerMethod(graphType)
+    stringPairs = collectFromAppropriateHandlerMethod(graphType)
     stringPairs = cleanHeadTailTupleData(stringPairs)
     return stringPairs
 
-def runAppropriateHandlerMethod(graphType):
+def collectFromAppropriateHandlerMethod(graphType):
     interactionFormat = graphType['interactionFormat']
     dataPath = graphType['path']
     stringPairs = []
@@ -43,16 +43,29 @@ def formatMatrixData(graphType):
     metaPredators = extractColBasedMetadata(graphType,df,dataCoord)
     prey = extractPreyFromFile(dataCoord,headingCoord,df,nameDepth)
     metaPrey = extractRowBasedMetadata(graphType,df,dataCoord)
-    return createPairDataFromMatrix(dataMatrix,predators,prey,metaPredators,metaPrey)   
+    return createPairDataFromMatrix(dataMatrix,predators,prey,metaPredators,metaPrey)
+
+def processMatrixMetaDataAtOrientation(graphType,orientation,processFn,startOfData):
+    userProvidedColData = list(filter(lambda x: x['orientation']==orientation, graphType['metaData']))
+    userProvidedColData = list(map(lambda x: (x['name'],int(x['index'])-1), userProvidedColData))
+    valuesOfInterest = list(map(processFn, userProvidedColData)) 
+    nonNullOrIrrelevantRows = list(map(lambda x: (x[0], x[1][startOfData:]), valuesOfInterest))
+    return nonNullOrIrrelevantRows
 
 def extractRowBasedMetadata(graphType,df,dataCoord):
+    return processMatrixMetaDataAtOrientation(graphType,'row',lambda x: (x[0],df.iloc[x[1],:].values.tolist()),dataCoord[0])
+
+def extractColBasedMetadata(graphType,df,dataCoord):
+    return processMatrixMetaDataAtOrientation(graphType,'col',lambda x: (x[0],df.iloc[:,x[1]].values.tolist()),dataCoord[1])
+
+def extractRowBasedMetadata0(graphType,df,dataCoord):
     userProvidedColData = list(filter(lambda x: x['orientation']=='row', graphType['metaData']))
     userProvidedColData = list(map(lambda x: (x['name'],int(x['index'])-1), userProvidedColData))
     valuesOfInterest = list(map(lambda x: (x[0],df.iloc[x[1],:].values.tolist()), userProvidedColData)) 
     nonNullOrIrrelevantRows = list(map(lambda x: (x[0], x[1][dataCoord[0]:]), valuesOfInterest))
     return nonNullOrIrrelevantRows
 
-def extractColBasedMetadata(graphType,df,dataCoord):
+def extractColBasedMetadata0(graphType,df,dataCoord):
     userProvidedColData = list(filter(lambda x: x['orientation']=='col', graphType['metaData']))
     userProvidedColData = list(map(lambda x: (x['name'],int(x['index'])-1), userProvidedColData))
     valuesOfInterest = list(map(lambda x: (x[0],df.iloc[:,x[1]].values.tolist()), userProvidedColData)) 

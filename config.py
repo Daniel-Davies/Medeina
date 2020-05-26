@@ -18,4 +18,4 @@ APIMAX = 100
 APIURL = "http://resolver.globalnames.org/name_resolvers.json"
 
 DATASET_METAS = ['interactionType','evidencedBy','webName','citation','location','date']
-LINK_METAS = ['interactionType','evidencedBy']
+LINK_METAS = ['interactionType','evidencedBy','location']

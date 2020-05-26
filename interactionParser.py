@@ -9,6 +9,7 @@ import itertools
 import operator 
 from common import writeObjToDateStore, retrieveObjFromStore, mostCommonInList
 from dataFormatReaders import parseSpeciesInteractionCells
+import pycountry
 
 def saveNewData(parsedSpecificationString):
     dId = createNewDatasetRecord(parsedSpecificationString)
@@ -24,9 +25,6 @@ def createNewDatasetRecord(parsedSpecificationString):
     existing[newId] = datasetMeta
     writeObjToDateStore(parsedSpecificationString['storageLocation'],DATASETS,existing)
     return newId
-
-def takeDatasetMetaData(parsedSpecificationString):
-    return {item: parsedSpecificationString[item] for item in DATASET_METAS if item in parsedSpecificationString}
 
 def createAndStoreSpeciesIds(stringHeadTailData,directory):
     headTailOnly = keepInteractionPartOnly(stringHeadTailData)
@@ -45,13 +43,17 @@ def writeLinksToDataStore(consumableData,dId,directory):
         if predator not in existingWeb: existingWeb[predator] = defaultdict(list)
         
         existingWeb[predator][prey].append(currentLinkId)
-        meta['dId'] = dId
-        existingLinks[currentLinkId] = meta
+        existingLinks[currentLinkId] = processLinkMetaData(meta,dId)
         currentLinkId += 1
     
     existingWeb[IDTRACKER] = currentLinkId
     writeObjToDateStore(directory, WEB, existingWeb)
     writeObjToDateStore(directory, LINKS, existingLinks)
+
+def processLinkMetaData(meta,dId):
+    meta['dId'] = dId
+    if 'location' in meta: meta['location'] = standardiseLocationData(meta['location'])
+    return meta
 
 def writeTaxonomicInformationToDataStore(species,directory):
     toProcess, existingTaxaData, stringNameMapper = determineTaxonomicGaps(directory,species)
@@ -132,4 +134,17 @@ def runConsensusOnSingleTaxa(taxaRank,individualDictionaryMappings):
     if len(allItemsOfTaxa) == 0: return ''
     return mostCommonInList(allItemsOfTaxa)
 
+def takeDatasetMetaData(parsedSpecificationString):
+    joinedMetas = {item: parsedSpecificationString[item] for item in DATASET_METAS if item in parsedSpecificationString}
+    if 'location' in joinedMetas: joinedMetas['location'] = standardiseLocationData(joinedMetas['location'])
+    return joinedMetas
+
+def standardiseLocationData(location):
+    indivLocations = location.split(",")[::-1]
+    agg = []
+    for item in indivLocations:
+        try: agg.append(pycountry.countries.search_fuzzy(x)[0].name)
+        except: pass 
     
+    country = mostCommonInList(indivLocations)
+    return {'region': ",".join(indivLocations[::-1][:-1]), 'country':country}
