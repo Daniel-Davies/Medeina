@@ -28,7 +28,11 @@ def createNewDatasetRecord(parsedSpecificationString):
 def storeSpeciesData(stringHeadTailData,directory,includeInvalid):
     headTailOnly = keepInteractionPartOnly(stringHeadTailData)
     speciesMapping = assignAndStoreUniqueIdsOfSpecies(itertools.chain(*headTailOnly),directory,includeInvalid)
-    return list(map(lambda x: (speciesMapping[x[0]], speciesMapping[x[1]], x[2]),stringHeadTailData))
+    return list(map(lambda x: (speciesMapping[x[0]], speciesMapping[x[1]], x[2]),filter(lambda x: verifyValidInteraction(speciesMapping,x), stringHeadTailData)))
+
+def verifyValidInteraction(speciesMapping,indivSpeciesInteraction):
+    head,tail,meta = indivSpeciesInteraction
+    return head in speciesMapping and tail in speciesMapping
 
 def keepInteractionPartOnly(headTailDataWMeta):
     return list(map(lambda tup: (tup[0],tup[1]),headTailDataWMeta))
@@ -64,7 +68,7 @@ def warnSpeciesNameFailure(individualResult):
 
 def assignAndStoreUniqueIdsOfSpecies(species,directory,includeInvalid=False):
     validSpecies = getTaxaAndValidateNames(species,directory,includeInvalid)
-    if len(validSpecies) == 0: return []
+    if len(validSpecies) == 0: return {}
     stringNames = addSpeciesToStringNameMapping(validSpecies,directory)
     writeTaxonomicInformation(validSpecies,directory,stringNames)
     return stringNames
