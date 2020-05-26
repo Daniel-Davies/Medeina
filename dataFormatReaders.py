@@ -34,19 +34,53 @@ def retrieveUserProvidedPairMetaData(df, graphType):
     return df['metas'].values.tolist()
 
 def formatMatrixData(graphType):
-    df = readContentAsDataFrame(graphType['path'],header=None) 
+    df = readContentAsDataFrame(graphType['path'],header=None)
+    nameDepth = graphType.get('nameDepth',100)  
     headingCoord = parseStringToTuple(graphType.get('headingCorner','(1,1)'))
     dataCoord = parseStringToTuple(graphType.get('dataCorner','(2,2)'))
     dataMatrix = handleData(dataCoord, df).values.tolist()
+    predators = extractPredatorsFromFile(dataCoord,headingCoord,df,nameDepth)
+    metaPredators = extractColBasedMetadata(graphType,df,dataCoord)
+    prey = extractPreyFromFile(dataCoord,headingCoord,df,nameDepth)
+    metaPrey = extractRowBasedMetadata(graphType,df,dataCoord)
+    return createPairDataFromMatrix(dataMatrix,predators,prey,metaPredators,metaPrey)   
+
+def extractRowBasedMetadata(graphType,df,dataCoord):
+    userProvidedColData = list(filter(lambda x: x['orientation']=='row', graphType['metaData']))
+    userProvidedColData = list(map(lambda x: (x['name'],int(x['index'])-1), userProvidedColData))
+    valuesOfInterest = list(map(lambda x: (x[0],df.iloc[x[1],:].values.tolist()), userProvidedColData)) 
+    nonNullOrIrrelevantRows = list(map(lambda x: (x[0], x[1][dataCoord[0]:]), valuesOfInterest))
+    return nonNullOrIrrelevantRows
+
+def extractColBasedMetadata(graphType,df,dataCoord):
+    userProvidedColData = list(filter(lambda x: x['orientation']=='col', graphType['metaData']))
+    userProvidedColData = list(map(lambda x: (x['name'],int(x['index'])-1), userProvidedColData))
+    valuesOfInterest = list(map(lambda x: (x[0],df.iloc[:,x[1]].values.tolist()), userProvidedColData)) 
+    nonNullOrIrrelevantRows = list(map(lambda x: (x[0], x[1][dataCoord[1]:]), valuesOfInterest))
+    return nonNullOrIrrelevantRows
+
+def mergeRowColMetadataDicts(metaPredators,metaPrey,predIndex,preyIndex):
+    individualPredatorMetas = list(map(lambda x: {x[0]: x[1][predIndex]}, metaPredators))
+    individualPreyMetas = list(map(lambda x: {x[0]: x[1][preyIndex]}, metaPrey))
+    predatorMetasAsSingeDict = {k: v for d in individualPredatorMetas for k, v in d.items()}
+    preyMetasAsSingleDict = {k: v for d in individualPreyMetas for k, v in d.items()}
+    return {**predatorMetasAsSingeDict, **preyMetasAsSingleDict}
+    
+def extractPredatorsFromFile(dataCoord,headingCoord,df,nameDepth):
     predators = handlePredatorData(dataCoord,headingCoord,df).values.tolist()
+    predators = list(map(lambda x: x[:nameDepth], predators))
     predators = list(map(safeJoin,predators))
+    return predators
+
+def extractPreyFromFile(dataCoord,headingCoord,df,nameDepth):
     prey = handlePreyData(dataCoord,headingCoord,df).values.tolist()
     prey = crushMultiRow(prey)
-    consumableData = createPairDataFromMatrix(dataMatrix,predators,prey)    
-    return consumableData
+    prey = list(map(lambda x: x[:nameDepth], prey))
+    prey = list(map(safeJoin,prey))
+    return prey
 
 def crushMultiRow(multiHeadings):
-    return list(map(safeJoin,list(zip(*multiHeadings))))
+    return list(zip(*multiHeadings))
 
 def safeJoin(listOfNames):
     filterNone = list(filter(lambda x: isinstance(x,str), listOfNames))
@@ -78,14 +112,14 @@ def parseStringToTuple(coord):
     x,y = coord.split(",")
     return (int(x)-1,int(y)-1)
 
-def createPairDataFromMatrix(dataMatrix,predators,prey):
+def createPairDataFromMatrix(dataMatrix,predators,prey,metaPredators,metaPrey):
     assert len(predators) == len(dataMatrix)
     assert len(prey) == len(dataMatrix[0])
     consumableData = []
     for i in range(len(predators)):
         for j in range(len(prey)):
             if dataMatrix[i][j] != 0: 
-                consumableData.append((predators[i],prey[j],{}))
+                consumableData.append((predators[i],prey[j],mergeRowColMetadataDicts(metaPredators,metaPrey,i,j)))
     return consumableData
 
 def readContentAsDataFrame(dataPath,header='infer'):
@@ -98,4 +132,5 @@ def readContentAsDataFrame(dataPath,header='infer'):
         data = data.dropna(axis=1, how='all')
 
     data = data.dropna(axis=1, how='all')
+    data = data.dropna(axis=0, how='all')
     return data
