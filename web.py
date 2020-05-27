@@ -74,9 +74,8 @@ class Web:
             raise ValueError("Malformed Taxa Specification!")
     
     def isValidTaxaConstraint(self,taxaConstraintTuple):
-        species,level = taxaConstraintTuple
-        species = cleanSingleSpeciesString(species)
-        if species not in self.stringNames: return False
+        name,level = taxaConstraintTuple
+        if not isinstance(name,str): return False
         if level not in TAXA_OF_INTEREST: return False
 
         return True
@@ -118,13 +117,12 @@ class Web:
     def filterByTaxa(self,taxaConstraints):
         self.validateTaxaConstraints(taxaConstraints)
         self.logbook.append({'taxaConstraint':taxaConstraints})
-
-        # self.interactions = retrieveObjFromStore(self.storePath,WEB)
-        # self.taxaExceptions = retrieveObjFromStore(self.storePath,EXCEPTIONS)
-        # self.taxa = retrieveObjFromStore(self.storePath,TAXA)
-        # self.linkMetas = retrieveObjFromStore(self.storePath,LINKS)
-        # self.datasetMetas = retrieveObjFromStore(self.storePath,DATASETS)
-        # self.stringNames = retrieveObjFromStore(self.storePath,REALNAMES)
+        newWeb = self.replicateFoodWeb()
+        newWeb.stringNames = filterStringNamesByTaxaConstraints(self.stringNames,taxaConstraints,self.taxa)
+        newWeb.taxa = filterUneededTaxa(self.taxa,newWeb.stringNames)
+        newWeb.interactions = filterInvalidInteractions(self.interactions,newWeb.stringNames)
+        newWeb.linkMetas = filterInvalidLinks(self.linkMetas,newWeb.interactions) 
+        return newWeb
     
     def replicateFoodWeb(self):
         names = ['interactions','taxaExceptions','taxa','linkMetas','datasetMetas','stringNames','logbook']

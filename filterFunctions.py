@@ -135,3 +135,72 @@ def obsGenerator(val,obs):
 
 def locGenerator(val,loc):
     return (x == val['location']['country'] for x in loc)
+
+
+def filterStringNamesByTaxaConstraints(stringNames,taxaConstraints,taxa):
+    newStringNames = {}
+    taxaConstraints = convertTaxaConstraintsToFastAccess(taxaConstraints)
+    
+    for name,sId in stringNames.items():
+        speciesTaxa = taxa[sId]
+        speciesTaxa['species'] = name
+        if matchesConstraints(speciesTaxa,taxaConstraints):
+            newStringNames[name] = sId 
+        del speciesTaxa['species']
+    
+    return newStringNames
+
+def filterUneededTaxa(taxa,newSpeciesList):
+    newTaxa = {}
+    newSpeciesSIds = set(newSpeciesList.values())
+
+    for sId in taxa:
+        if sId in newSpeciesSIds:
+            newTaxa[sId] = taxa[sId]
+
+    return newTaxa 
+
+def matchesConstraints(speciesTaxa,taxaConstraints):
+    for group in taxaConstraints:
+        if speciesTaxa[group] in taxaConstraints[group]:
+            return True
+    return False
+
+def convertTaxaConstraintsToFastAccess(taxaConstraints):
+    constraintsByLevel = defaultdict(set)
+    for name,level in taxaConstraints:
+        constraintsByLevel[level].add(name)
+
+    return constraintsByLevel
+
+def filterInvalidInteractions(interactions,stringNames):
+    validSpecies = set(stringNames.values())
+    newInteractions = {}
+
+    for predator in interactions:
+        if predator in validSpecies:
+            newInteractions[predator] = {}
+            for prey in interactions[predator]:
+                if prey in validSpecies:
+                    newInteractions[predator][prey] = (interactions[predator][prey])
+            if len(newInteractions[predator]) == 0:
+                del newInteractions[predator] 
+    return newInteractions
+
+def filterInvalidLinks(linkMetas, interactions):
+    validLinkIds = crushInteractionsToIdsOnly(interactions)
+    newMetas = {}
+    for idx,val in linkMetas.items():
+        if idx in validLinkIds:
+            newMetas[idx] = val 
+    
+    return validLinkIds
+
+def crushInteractionsToIdsOnly(interactions):
+    idx = []
+    for predator in interactions:
+        for prey in interactions[predator]:
+            idx.extend(interactions[predator][prey])
+    
+    return set(idx)
+
