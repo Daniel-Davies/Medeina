@@ -2,6 +2,7 @@ from common import *
 from config import *
 from dataCleaning import cleanSingleSpeciesString
 from filterFunctions import *
+import pycountry
 
 class Web:
     def __init__(self,path=BASEDIR,*args,**kwargs):
@@ -64,12 +65,39 @@ class Web:
         if not all(isinstance(x,str) for x in obs):
             raise ValueError("Observation type is a string!")
     
+    def validateLocType(self,loc):
+        if not all(isinstance(x,str) for x in loc):
+            raise ValueError("Location is a string!")
+        
+    def standardiseCountries(self,loc):
+        newCountries = []
+        for item in loc:
+            try:
+                newCountries.append(pycountry.countries.search_fuzzy(item)[0].name)
+            except:
+                raise ValueError("Country not recognised")
+        
+        return newCountries
+
     def filterByObservationType(self,obs,strict=False):
         self.validateObsType(obs)
         self.logbook.append({'observationFilter':obs})
         newWeb = self.replicateFoodWeb()
         newWeb.linkMetas = filterLinkMetasByObs(self.linkMetas,obs,self.datasetMetas,strict)
         newWeb.datasetMetas = filterDatasetMetasByObs(self.datasetMetas,strict,obs)
+        newWeb.interactions = filterInteractionsByLinkIds(self.interactions,newWeb.linkMetas)
+        newWeb.stringNames = filterStringNamesByInteractions(self.stringNames,newWeb.interactions)
+        newWeb.taxa = filterNoLongerNeededTaxa(self.taxa,newWeb.stringNames)
+        return newWeb
+    
+    def filterByCountry(self,loc,strict=False):
+        self.validateObsType(loc)
+        loc = self.standardiseCountries(loc)
+        print(loc)
+        self.logbook.append({'countryFilter':loc})
+        newWeb = self.replicateFoodWeb()
+        newWeb.linkMetas = filterLinkMetasByCountry(self.linkMetas,loc,self.datasetMetas,strict)
+        newWeb.datasetMetas = filterDatasetMetasByCountry(self.datasetMetas,strict,loc)
         newWeb.interactions = filterInteractionsByLinkIds(self.interactions,newWeb.linkMetas)
         newWeb.stringNames = filterStringNamesByInteractions(self.stringNames,newWeb.interactions)
         newWeb.taxa = filterNoLongerNeededTaxa(self.taxa,newWeb.stringNames)

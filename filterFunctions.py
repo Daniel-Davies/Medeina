@@ -24,6 +24,7 @@ def filterInteractionsByLinkIds(dict_,linkMetas):
                 newInteractions[predator][prey].extend(newAddition)
     
     newInteractions[IDTRACKER] = tmp
+    dict_[IDTRACKER] = tmp
     return newInteractions
 
 def filterStringNamesByInteractions(speciesStringDict,interactionDict):
@@ -108,16 +109,72 @@ def filterDatasetMetasByObs(datasetMetas,strict,obs):
     
     return newDataSetMetas
 
+### Location
+#################################################################
 
+def filterLinkMetasByCountry(linkMetas,loc,datasetMetas,strict):
+    loc = set(loc)
+    unaccountedFor = []
+    newLinks = {}
+    for key,val in linkMetas.items():
+        if 'location' not in val:
+            unaccountedFor.append(key)
+        else:
+            for x in loc:
+                if val['location']['country'] == x:
+                    newLinks[key] = val 
+                    break
+
+    stillUnnacountedFor = []
+    for link in unaccountedFor:
+        linkMetaSingle = linkMetas[link]
+        indivDId = linkMetaSingle['dId']
+
+        if 'location' not in datasetMetas[indivDId]:
+            stillUnnacountedFor.append(link)
+        else:
+            for x in loc:
+                if datasetMetas[indivDId]['location']['country'] == x:
+                    newLinks[link] = linkMetaSingle 
+                    break
+
+    if strict: return newLinks
+
+    for link in stillUnnacountedFor:
+        vali = linkMetas[link]
+        newLinks[link] = vali
+
+    return newLinks
+
+def filterDatasetMetasByCountry(datasetMetas,strict,loc):
+    newDataSetMetas = {}
+    unaccountedFor = []
+    for key,val in datasetMetas.items():
+        if 'location' not in val:
+            unaccountedFor.append(key)
+        else:
+            for x in loc:
+                if val['location']['country'] == x:
+                    newDataSetMetas[key] = val 
+                    break
+    
+    if strict: return newDataSetMetas
+
+    for link in unaccountedFor:
+        vali = datasetMetas[link]
+        newDataSetMetas[link] = vali
+    
+    return newDataSetMetas
 
 def crushInteractionDict(dict_):
     species = set()
+    tmp = dict_[IDTRACKER]
     del dict_[IDTRACKER]
     for predator in dict_:
         species.add(predator)
         for prey in dict_[predator]:
             species.add(prey)
-    
+    dict_[IDTRACKER] = tmp
     return species
 
 def countInteractionsInDict(dict_):

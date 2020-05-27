@@ -5,7 +5,7 @@ import requests
 
 dct = {}
 dct['interactionType'] = 'pollination'
-dct['location'] = "Other Lake,Germany"
+dct['location'] = "Other Lake,Ukraine"
 dct['evidencedBy'] = "observation"
 
 dct['encoding'] = {}
