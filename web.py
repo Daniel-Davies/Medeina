@@ -49,13 +49,15 @@ class Web:
         self.logbook.append({'datasetIdFilter':dIds})
         newWeb = self.replicateFoodWeb()
         newWeb.datasetMetas = filterDatasetByDIds(self.datasetMetas,dIds)
-        newWeb.interactions = filterInteractionsByDIds(self.interactions,dIds)
         newWeb.linkMetas = filterLinksMetasByDIds(self.linkMetas,dIds)
+        newWeb.interactions = filterInteractionsByDIds(self.interactions,newWeb.linkMetas)
+        newWeb.stringNames = filterStringNamesByDIds(self.stringNames,newWeb.interactions)
+        newWeb.taxa = filterNoLongerNeededTaxa(self.taxa,newWeb.stringNames)
+        # newWeb.taxaExceptions = filterNoLongerNeededTaxaExceptions(self.taxaExceptions,newWeb.stringNames)
         return newWeb
-        # filter all stuff (just interactions & datasets should do)
 
     def validateDIds(self,dIds):
-        return dIds
+        return all(isinstance(x,int) for x in dIds)
 
     def filterByTaxa(self):
         pass 
@@ -67,7 +69,7 @@ class Web:
         names = ['interactions','taxaExceptions','taxa','linkMetas','datasetMetas','stringNames','logbook']
         newData = list(map(serialise,[self.interactions,self.taxaExceptions,self.taxa,self.linkMetas,self.datasetMetas,self.stringNames,self.logbook]))
         kwargsDict = dict(zip(names,newData))
-        return Web(**kwargsDict)
+        return Web(path=self.storePath, **kwargsDict)
 
     def apply(self):
         # Will probably need a new object?
@@ -82,7 +84,8 @@ class Web:
 
     def summarise(self):
         print("Current Interaction Web has:")
-        print(str(countInteractionsInDict(self.interactions))+" interactions") 
+        print(str(len(self.linkMetas))+" interactions") 
+        print(str(len(self.stringNames))+" interactions") 
         
 
     def sayHelloMedeina(self):
