@@ -16,15 +16,18 @@ def filterInteractionsByLinkIds(dict_,linkMetas):
     newInteractions = {}
     tmp = dict_[IDTRACKER]
     del dict_[IDTRACKER]
+    newInteractions[IDTRACKER] = tmp
+    newInteractions = createNewInteractionDict(newInteractions,dict_,linkMetas)
+    dict_[IDTRACKER] = tmp
+    return newInteractions
+
+def createNewInteractionDict(newInteractions,dict_,linkMetas):
     for predator in dict_:
         for prey in dict_[predator]:
             newAddition = list(filter(lambda x: x in linkMetas,dict_[predator][prey]))
             if len(newAddition) != 0:
                 if predator not in newInteractions: newInteractions[predator] = defaultdict(list)
                 newInteractions[predator][prey].extend(newAddition)
-    
-    newInteractions[IDTRACKER] = tmp
-    dict_[IDTRACKER] = tmp
     return newInteractions
 
 def filterStringNamesByInteractions(speciesStringDict,interactionDict):
@@ -52,120 +55,6 @@ def filterNoLongerNeededTaxaExceptions(taxaExc,stringNames):
         
     return newTaxaExc
 
-### Observation Types
-#########################################################################
-
-def filterLinkMetasByObs(linkMetas,obs,datasetMetas,strict):
-    obs = set(obs)
-    unaccountedFor = []
-    newLinks = {}
-    for key,val in linkMetas.items():
-        if 'evidencedBy' not in val:
-            unaccountedFor.append(key)
-        else:
-            for x in obs:
-                if val['evidencedBy'] == x:
-                    newLinks[key] = val 
-                    break
-
-    stillUnnacountedFor = []
-    for link in unaccountedFor:
-        linkMetaSingle = linkMetas[link]
-        indivDId = linkMetaSingle['dId']
-
-        if 'evidencedBy' not in datasetMetas[indivDId]:
-            stillUnnacountedFor.append(link)
-        else:
-            for x in obs:
-                if datasetMetas[indivDId]['evidencedBy'] == x:
-                    newLinks[link] = linkMetaSingle 
-                    break
-
-    if strict: return newLinks
-
-    for link in stillUnnacountedFor:
-        vali = linkMetas[link]
-        newLinks[link] = vali
-
-    return newLinks
-
-def filterDatasetMetasByObs(datasetMetas,strict,obs):
-    newDataSetMetas = {}
-    unaccountedFor = []
-    for key,val in datasetMetas.items():
-        if 'evidencedBy' not in val:
-            unaccountedFor.append(key)
-        else:
-            for x in obs:
-                if val['evidencedBy'] == x:
-                    newDataSetMetas[key] = val 
-                    break
-    
-    if strict: return newDataSetMetas
-
-    for link in unaccountedFor:
-        vali = datasetMetas[link]
-        newDataSetMetas[link] = vali
-    
-    return newDataSetMetas
-
-### Location
-#################################################################
-
-def filterLinkMetasByCountry(linkMetas,loc,datasetMetas,strict):
-    loc = set(loc)
-    unaccountedFor = []
-    newLinks = {}
-    for key,val in linkMetas.items():
-        if 'location' not in val:
-            unaccountedFor.append(key)
-        else:
-            for x in loc:
-                if val['location']['country'] == x:
-                    newLinks[key] = val 
-                    break
-
-    stillUnnacountedFor = []
-    for link in unaccountedFor:
-        linkMetaSingle = linkMetas[link]
-        indivDId = linkMetaSingle['dId']
-
-        if 'location' not in datasetMetas[indivDId]:
-            stillUnnacountedFor.append(link)
-        else:
-            for x in loc:
-                if datasetMetas[indivDId]['location']['country'] == x:
-                    newLinks[link] = linkMetaSingle 
-                    break
-
-    if strict: return newLinks
-
-    for link in stillUnnacountedFor:
-        vali = linkMetas[link]
-        newLinks[link] = vali
-
-    return newLinks
-
-def filterDatasetMetasByCountry(datasetMetas,strict,loc):
-    newDataSetMetas = {}
-    unaccountedFor = []
-    for key,val in datasetMetas.items():
-        if 'location' not in val:
-            unaccountedFor.append(key)
-        else:
-            for x in loc:
-                if val['location']['country'] == x:
-                    newDataSetMetas[key] = val 
-                    break
-    
-    if strict: return newDataSetMetas
-
-    for link in unaccountedFor:
-        vali = datasetMetas[link]
-        newDataSetMetas[link] = vali
-    
-    return newDataSetMetas
-
 def crushInteractionDict(dict_):
     species = set()
     tmp = dict_[IDTRACKER]
@@ -187,3 +76,62 @@ def countInteractionsInDict(dict_):
     dict_[IDTRACKER] = tmp
     return total
 
+def filterMetasByObs(linkMetas,obs,datasetMetas,strict):
+    newLinks = filterLinkMetaData(linkMetas,datasetMetas,obs,strict,obsGenerator,'evidencedBy')
+    newDataset = filterDatasetMetaData(datasetMetas,strict,obs,obsGenerator,'evidencedBy')
+    return newLinks, newDataset
+
+def filterMetasByCountry(linkMetas,loc,datasetMetas,strict):
+    newLinks = filterLinkMetaData(linkMetas,datasetMetas,loc,strict,locGenerator,'location')
+    newDataset = filterDatasetMetaData(datasetMetas,strict,loc,locGenerator,'location')
+    return newLinks, newDataset
+
+def filterLinkMetaData(linkMetas,datasetMetas,acceptedList,strict,generator,tag): 
+    acceptedList = set(acceptedList)
+    newLinks, unaccountedFor = takeMatchingFromLinkMetas(linkMetas,acceptedList,generator,tag)
+    newLinks, unaccountedFor = takeMatchingFromDatasetMetas(datasetMetas,newLinks,linkMetas,acceptedList,unaccountedFor,generator,tag)
+    if not strict: newLinks = inferRemainingLinks(newLinks,unaccountedFor,linkMetas)
+    return newLinks
+
+def filterDatasetMetaData(datasetMetas,strict,acceptedList,generator,tag):
+    newDataSetMetas = {}
+    unaccountedFor = []
+    for key,val in datasetMetas.items():
+        if tag not in val: unaccountedFor.append(key)
+        elif any(generator(val,acceptedList)): newDataSetMetas[key] = val 
+    
+    if strict: return newDataSetMetas
+    newDataSetMetas = inferRemainingLinks(newDataSetMetas,unaccountedFor,datasetMetas)    
+    return newDataSetMetas
+
+def takeMatchingFromLinkMetas(linkMetas,obs,generator,keyName):
+    unaccountedFor = []
+    newLinks = {}
+    for key,val in linkMetas.items():
+        if keyName not in val: unaccountedFor.append(key)
+        elif any(generator(val,obs)): newLinks[key] = val 
+
+    return newLinks, unaccountedFor
+
+def takeMatchingFromDatasetMetas(datasetMetas,newLinks,linkMetas,acceptedList,unaccountedFor,generator,tag):
+    stillUnnacountedFor = []
+    for link in unaccountedFor:
+        linkMetaSingle = linkMetas[link]
+        indivDId = linkMetaSingle['dId']
+
+        if tag not in datasetMetas[indivDId]: stillUnnacountedFor.append(link)
+        elif any(locGenerator(datasetMetas[indivDId],acceptedList)): newLinks[link] = linkMetaSingle 
+
+    return newLinks, stillUnnacountedFor
+
+def inferRemainingLinks(newLinks,unaccountedFor,metas):
+    for link in unaccountedFor:
+        vali = metas[link]
+        newLinks[link] = vali
+    return newLinks
+
+def obsGenerator(val,obs):
+    return (x == val['evidencedBy'] for x in obs)
+
+def locGenerator(val,loc):
+    return (x == val['location']['country'] for x in loc)

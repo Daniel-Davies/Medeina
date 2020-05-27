@@ -82,22 +82,22 @@ class Web:
     def filterByObservationType(self,obs,strict=False):
         self.validateObsType(obs)
         self.logbook.append({'observationFilter':obs})
-        newWeb = self.replicateFoodWeb()
-        newWeb.linkMetas = filterLinkMetasByObs(self.linkMetas,obs,self.datasetMetas,strict)
-        newWeb.datasetMetas = filterDatasetMetasByObs(self.datasetMetas,strict,obs)
-        newWeb.interactions = filterInteractionsByLinkIds(self.interactions,newWeb.linkMetas)
-        newWeb.stringNames = filterStringNamesByInteractions(self.stringNames,newWeb.interactions)
-        newWeb.taxa = filterNoLongerNeededTaxa(self.taxa,newWeb.stringNames)
+        newWeb = self.filterOnMetaData(obs,strict,filterMetasByObs)
         return newWeb
     
     def filterByCountry(self,loc,strict=False):
         self.validateObsType(loc)
         loc = self.standardiseCountries(loc)
-        print(loc)
         self.logbook.append({'countryFilter':loc})
+        newWeb = self.filterOnMetaData(loc,strict,filterMetasByCountry)
+        return newWeb
+    
+    def filterOnMetaData(self,acceptedList,strict,callHandler):
+        newLinkMetas, newDatasetMetas = callHandler(self.linkMetas,acceptedList,self.datasetMetas,strict)
+
         newWeb = self.replicateFoodWeb()
-        newWeb.linkMetas = filterLinkMetasByCountry(self.linkMetas,loc,self.datasetMetas,strict)
-        newWeb.datasetMetas = filterDatasetMetasByCountry(self.datasetMetas,strict,loc)
+        newWeb.linkMetas = newLinkMetas
+        newWeb.datasetMetas = newDatasetMetas
         newWeb.interactions = filterInteractionsByLinkIds(self.interactions,newWeb.linkMetas)
         newWeb.stringNames = filterStringNamesByInteractions(self.stringNames,newWeb.interactions)
         newWeb.taxa = filterNoLongerNeededTaxa(self.taxa,newWeb.stringNames)
