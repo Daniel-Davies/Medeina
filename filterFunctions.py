@@ -1,6 +1,9 @@
 from collections import defaultdict
 from config import *
 
+### Dataset ID
+#########################################################################
+
 def filterDatasetByDIds(datasetObject,dIds):
     dIds = set(dIds)
     return {k:v for k, v in datasetObject.items() if k in dIds}
@@ -9,7 +12,7 @@ def filterLinksMetasByDIds(linkMetas,dIds):
     dIds = set(dIds)
     return {k:v for k, v in linkMetas.items() if v['dId'] in dIds} 
 
-def filterInteractionsByDIds(dict_,linkMetas):
+def filterInteractionsByLinkIds(dict_,linkMetas):
     newInteractions = {}
     tmp = dict_[IDTRACKER]
     del dict_[IDTRACKER]
@@ -23,7 +26,7 @@ def filterInteractionsByDIds(dict_,linkMetas):
     newInteractions[IDTRACKER] = tmp
     return newInteractions
 
-def filterStringNamesByDIds(speciesStringDict,interactionDict):
+def filterStringNamesByInteractions(speciesStringDict,interactionDict):
     speciesSet = crushInteractionDict(interactionDict)
     newSpeciesStringDict = {}
     for k,v in speciesStringDict.items():
@@ -48,6 +51,65 @@ def filterNoLongerNeededTaxaExceptions(taxaExc,stringNames):
         
     return newTaxaExc
 
+### Observation Types
+#########################################################################
+
+def filterLinkMetasByObs(linkMetas,obs,datasetMetas,strict):
+    obs = set(obs)
+    unaccountedFor = []
+    newLinks = {}
+    for key,val in linkMetas.items():
+        if 'evidencedBy' not in val:
+            unaccountedFor.append(key)
+        else:
+            for x in obs:
+                if val['evidencedBy'] == x:
+                    newLinks[key] = val 
+                    break
+
+    stillUnnacountedFor = []
+    for link in unaccountedFor:
+        linkMetaSingle = linkMetas[link]
+        indivDId = linkMetaSingle['dId']
+
+        if 'evidencedBy' not in datasetMetas[indivDId]:
+            stillUnnacountedFor.append(link)
+        else:
+            for x in obs:
+                if datasetMetas[indivDId]['evidencedBy'] == x:
+                    newLinks[link] = linkMetaSingle 
+                    break
+
+    if strict: return newLinks
+
+    for link in stillUnnacountedFor:
+        vali = linkMetas[link]
+        newLinks[link] = vali
+
+    return newLinks
+
+def filterDatasetMetasByObs(datasetMetas,strict,obs):
+    newDataSetMetas = {}
+    unaccountedFor = []
+    for key,val in datasetMetas.items():
+        if 'evidencedBy' not in val:
+            unaccountedFor.append(key)
+        else:
+            for x in obs:
+                if val['evidencedBy'] == x:
+                    newDataSetMetas[key] = val 
+                    break
+    
+    if strict: return newDataSetMetas
+
+    for link in unaccountedFor:
+        vali = datasetMetas[link]
+        newDataSetMetas[link] = vali
+    
+    return newDataSetMetas
+
+
+
 def crushInteractionDict(dict_):
     species = set()
     del dict_[IDTRACKER]
@@ -67,3 +129,4 @@ def countInteractionsInDict(dict_):
             total += len(dict_[predator][prey])
     dict_[IDTRACKER] = tmp
     return total
+

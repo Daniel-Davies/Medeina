@@ -4,15 +4,15 @@ import json
 import requests
 
 dct = {}
-dct['interactionType'] = 'trophic'
-dct['location'] = "Lake,Switzerland"
+dct['interactionType'] = 'pollination'
+dct['location'] = "Other Lake,Germany"
+dct['evidencedBy'] = "observation"
 
 dct['encoding'] = {}
 dct['encoding']['interactionFormat'] = 'pair'
-dct['encoding']['head'] = 'con.taxonomy'
-dct['encoding']['tail'] = 'res.taxonomy'
-dct['encoding']['evidencedBy'] = 'link.methodology'
-dct['encoding']['path'] = "C:/Users/davie/Desktop/Masters/Dissertation/Code/DissertationCode/Eigg/Utilities/RelevantDatasets/production/2018GlobAL.csv"
+dct['encoding']['head'] = 'consumer'
+dct['encoding']['tail'] = 'resource'
+dct['encoding']['path'] = "C:/Users/davie/Desktop/Masters/Dissertation/Code/DissertationCode/Eigg/Utilities/RelevantDatasets/production/freshwater.csv"
 
 # dct['encoding'] = {}
 # dct['encoding']['interactionFormat'] = 'matrix'

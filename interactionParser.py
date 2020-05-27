@@ -67,11 +67,11 @@ def warnSpeciesNameFailure(individualResult):
     print("Could not index " + str(individualResult['supplied_name_string']))
 
 def assignAndStoreUniqueIdsOfSpecies(species,directory,includeInvalid=False):
-    validSpecies = getTaxaAndValidateNames(species,directory,includeInvalid)
-    if len(validSpecies) == 0: return {}
-    stringNames = addSpeciesToStringNameMapping(validSpecies,directory)
-    writeTaxonomicInformation(validSpecies,directory,stringNames)
-    return stringNames
+    validSpecies = getTaxaAndValidateNewNames(species,directory,includeInvalid)
+    if len(validSpecies) > 0: 
+        stringNames = addNewSpeciesToStringNameMapping(validSpecies,directory)
+        writeTaxonomicInformation(validSpecies,directory,stringNames)
+    return retrieveObjFromStore(directory,REALNAMES)
 
 def addSpeciesToStringNameMapping(validSpecies,directory):
     stringNames = retrieveObjFromStore(directory,REALNAMES)
@@ -87,8 +87,8 @@ def writeTaxonomicInformation(validSpeciesResponses,directory,stringNameMapper):
         existingTaxaData[sId] = taxaDict
     writeObjToDateStore(directory, TAXA, existingTaxaData)
 
-def getTaxaAndValidateNames(species,directory,includeInvalid):
-    species = determineTaxonomicGaps(species,directory)
+def getTaxaAndValidateNewNames(allSpecies,directory,includeInvalid):
+    species = determineTaxonomicGaps(allSpecies,directory)
     responses = []
     for i in range(0,len(species),APIMAX):
         print("Indexing records " + str(i) + " to " + str(min(len(species),i+APIMAX)) + " [of "+str(len(species))+"]")

@@ -50,20 +50,33 @@ class Web:
         newWeb = self.replicateFoodWeb()
         newWeb.datasetMetas = filterDatasetByDIds(self.datasetMetas,dIds)
         newWeb.linkMetas = filterLinksMetasByDIds(self.linkMetas,dIds)
-        newWeb.interactions = filterInteractionsByDIds(self.interactions,newWeb.linkMetas)
-        newWeb.stringNames = filterStringNamesByDIds(self.stringNames,newWeb.interactions)
+        newWeb.interactions = filterInteractionsByLinkIds(self.interactions,newWeb.linkMetas)
+        newWeb.stringNames = filterStringNamesByInteractions(self.stringNames,newWeb.interactions)
         newWeb.taxa = filterNoLongerNeededTaxa(self.taxa,newWeb.stringNames)
         # newWeb.taxaExceptions = filterNoLongerNeededTaxaExceptions(self.taxaExceptions,newWeb.stringNames)
         return newWeb
 
     def validateDIds(self,dIds):
-        return all(isinstance(x,int) for x in dIds)
+        if not all(isinstance(x,int) for x in dIds):
+            raise ValueError("Dataset IDs must be integers!")
+        
+    def validateObsType(self,obs):
+        if not all(isinstance(x,str) for x in obs):
+            raise ValueError("Observation type is a string!")
+    
+    def filterByObservationType(self,obs,strict=False):
+        self.validateObsType(obs)
+        self.logbook.append({'observationFilter':obs})
+        newWeb = self.replicateFoodWeb()
+        newWeb.linkMetas = filterLinkMetasByObs(self.linkMetas,obs,self.datasetMetas,strict)
+        newWeb.datasetMetas = filterDatasetMetasByObs(self.datasetMetas,strict,obs)
+        newWeb.interactions = filterInteractionsByLinkIds(self.interactions,newWeb.linkMetas)
+        newWeb.stringNames = filterStringNamesByInteractions(self.stringNames,newWeb.interactions)
+        newWeb.taxa = filterNoLongerNeededTaxa(self.taxa,newWeb.stringNames)
+        return newWeb
 
     def filterByTaxa(self):
         pass 
-    
-    def filterByObservationType(self):
-        pass
     
     def replicateFoodWeb(self):
         names = ['interactions','taxaExceptions','taxa','linkMetas','datasetMetas','stringNames','logbook']
@@ -75,6 +88,7 @@ class Web:
         # Will probably need a new object?
         pass 
 
+    # Probably for the query object
     def audit(self):
         pass 
     
@@ -85,8 +99,7 @@ class Web:
     def summarise(self):
         print("Current Interaction Web has:")
         print(str(len(self.linkMetas))+" interactions") 
-        print(str(len(self.stringNames))+" interactions") 
-        
+        print(str(len(self.stringNames))+" unique species") 
 
     def sayHelloMedeina(self):
         print("Hello")
