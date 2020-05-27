@@ -28,14 +28,14 @@ class Web:
         prettyPrintDict(self.taxaExceptions)
     
     def addTaxonomicExcpetion(self,species,consumer,resource,save=False):
-        species, consumer, resource = self.ensureValidUserInput(species,consumer,resource)
+        species, consumer, resource = self.ensureValidExceptionInput(species,consumer,resource)
         self.taxaExceptions[species] = {'consumer':consumer, 'resource':resource}
         if save:
             txe = retrieveObjFromStore(self.storePath,EXCEPTIONS)
             txe[species] = {'consumer':consumer, 'resource':resource}
             writeObjToDateStore(self.storePath,EXCEPTIONS,txe)
     
-    def ensureValidUserInput(self,species,consumer,resource):
+    def ensureValidExceptionInput(self,species,consumer,resource):
         species = cleanSingleSpeciesString(species)
         consumer = consumer.lower()
         resource = resource.lower()
@@ -68,7 +68,19 @@ class Web:
     def validateLocType(self,loc):
         if not all(isinstance(x,str) for x in loc):
             raise ValueError("Location is a string!")
-        
+    
+    def validateTaxaConstraints(self,listOfTaxaConstraints):
+        if not all(map(self.isValidTaxaConstraint,listOfTaxaConstraints)):
+            raise ValueError("Malformed Taxa Specification!")
+    
+    def isValidTaxaConstraint(self,taxaConstraintTuple):
+        species,level = taxaConstraintTuple
+        species = cleanSingleSpeciesString(species)
+        if species not in self.stringNames: return False
+        if level not in TAXA_OF_INTEREST: return False
+
+        return True
+
     def standardiseCountries(self,loc):
         newCountries = []
         for item in loc:
@@ -86,7 +98,7 @@ class Web:
         return newWeb
     
     def filterByCountry(self,loc,strict=False):
-        self.validateObsType(loc)
+        self.validateLocType(loc)
         loc = self.standardiseCountries(loc)
         self.logbook.append({'countryFilter':loc})
         newWeb = self.filterOnMetaData(loc,strict,filterMetasByCountry)
@@ -103,8 +115,16 @@ class Web:
         newWeb.taxa = filterNoLongerNeededTaxa(self.taxa,newWeb.stringNames)
         return newWeb
 
-    def filterByTaxa(self):
-        pass 
+    def filterByTaxa(self,taxaConstraints):
+        self.validateTaxaConstraints(taxaConstraints)
+        self.logbook.append({'taxaConstraint':taxaConstraints})
+
+        # self.interactions = retrieveObjFromStore(self.storePath,WEB)
+        # self.taxaExceptions = retrieveObjFromStore(self.storePath,EXCEPTIONS)
+        # self.taxa = retrieveObjFromStore(self.storePath,TAXA)
+        # self.linkMetas = retrieveObjFromStore(self.storePath,LINKS)
+        # self.datasetMetas = retrieveObjFromStore(self.storePath,DATASETS)
+        # self.stringNames = retrieveObjFromStore(self.storePath,REALNAMES)
     
     def replicateFoodWeb(self):
         names = ['interactions','taxaExceptions','taxa','linkMetas','datasetMetas','stringNames','logbook']
