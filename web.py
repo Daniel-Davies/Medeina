@@ -3,6 +3,7 @@ from config import *
 from dataCleaning import cleanSingleSpeciesString
 from filterFunctions import *
 import pycountry
+from MedeinaCumulativeApplication import MedeinaCumulativeApplication
 
 class Web:
     def __init__(self,path=BASEDIR,*args,**kwargs):
@@ -129,14 +130,12 @@ class Web:
         newData = list(map(serialise,[self.interactions,self.taxaExceptions,self.taxa,self.linkMetas,self.datasetMetas,self.stringNames,self.logbook]))
         kwargsDict = dict(zip(names,newData))
         return Web(path=self.storePath, **kwargsDict)
-
-    def apply(self):
-        # Will probably need a new object?
-        pass 
-
-    # Probably for the query object
-    def audit(self):
-        pass 
+    
+    def apply(self,species):
+        ap = MedeinaCumulativeApplication()
+        ap.apply(self,species)
+        ap.audit()
+        return ap
     
     def reIndex(self):
         # essentially load everything again, and apply functions from the logbook
