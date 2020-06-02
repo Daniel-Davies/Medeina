@@ -1,14 +1,18 @@
 from dataCleaning import cleanSingleSpeciesString
 import networkx as nx
 
-
 class MedeinaCumulativeApplication:
     def __init__(self):
         self.interactionStore = []
         self.stringNames = {}
     
-    # Taxa & Taxa exceptions
-    def apply(self,WebObj,species):
+    def apply(self,WebObj,species,taxaLevel=None):
+        if taxaLevel is None:
+            self.handleApplicationOnRawNames(WebObj,species)
+        else:
+            self.handleTaxonomicApplication(WebObj,species,taxaLevel)
+        
+    def handleApplicationOnRawNames(self,WebObj,species):
         graphStore = []
         species = list(map(cleanSingleSpeciesString,species))
         species = set(species)
@@ -28,6 +32,12 @@ class MedeinaCumulativeApplication:
 
         self.interactionStore = graphStore
         self.stringNames = reducedIdsToStrings
+    
+    def handleTaxonomicApplication(self,WebObj,species,taxaLevel):
+        # indexUserSpeciesList(species)
+        
+        pass
+        
     
     def toList(self):
         return list(map(lambda x: (self.stringNames[x[0]],self.stringNames[x[1]]), self.interactionStore))
