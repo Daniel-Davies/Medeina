@@ -120,10 +120,8 @@ def takeMatchingFromDatasetMetas(datasetMetas,newLinks,linkMetas,acceptedList,un
     for link in unaccountedFor:
         linkMetaSingle = linkMetas[link]
         indivDId = linkMetaSingle['dId']
-
         if tag not in datasetMetas[indivDId]: stillUnnacountedFor.append(link)
         elif any(generator(datasetMetas[indivDId],acceptedList)): newLinks[link] = linkMetaSingle 
-
     return newLinks, stillUnnacountedFor
 
 def inferRemainingLinks(newLinks,unaccountedFor,metas):
