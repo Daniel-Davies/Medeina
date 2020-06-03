@@ -152,24 +152,27 @@ class MedeinaCumulativeApplication:
         return stringResource
     
     def toList(self):
-        return list(map(lambda x: (self.stringNames[x[0]],self.stringNames[x[1]]), self.interactionStore))
+        return list(map(lambda x: (x[0],x[1]), self.interactionStore))
     
     def toGraph(self,directed=False):
-        nodes = self.stringNames.values()
+        nodes = self.interactionsToNodes()
         G = nx.Graph()
         if directed: G = nx.DiGraph()
         for node in nodes:
             G.add_node(node)
         
         for consumer,resource in self.interactionStore:
-            G.add_edge(self.stringNames[consumer],self.stringNames[resource])
+            G.add_edge(consumer,resource)
         
         return G
 
     def toMatrix(self):
         G = self.toGraph()
-        nodeOrder = list(self.stringNames.values())
+        nodeOrder = self.interactionsToNodes()
         return nx.to_numpy_matrix(G,nodelist=nodeOrder), nodeOrder
+    
+    def interactionsToNodes(self):
+        return list(set(itertools.chain(*self.interactionStore)))
 
     def audit(self):
         print("Complete")
