@@ -8,7 +8,7 @@ import itertools
 class MedeinaCumulativeApplication:
     def __init__(self,storePath):
         self.interactionStore = []
-        self.stringNames = {}
+        self.linkEvidence = defaultdict(list)
         self.storePath = storePath
     
     def apply(self,WebObj,species,taxaLevel="exact"):
@@ -71,9 +71,19 @@ class MedeinaCumulativeApplication:
             preyOfSpeciesAtTaxa = set(list(map(lambda x: taxa[x][consumerBehaviour],interactionWeb.get(stringNames[species],{}).keys()))) - set([''])
             for potentialPrey in genericSpecies:
                 if speciesWithTaxa[potentialPrey][consumerBehaviour] in preyOfSpeciesAtTaxa:
+                    self.addLinkEvidenceForPredExceptionInteraction(species,potentialPrey,interactionWeb,speciesWithTaxa[potentialPrey][consumerBehaviour],WebObj,consumerBehaviour)
                     exceptedInteractions.append((species,potentialPrey))
 
         return exceptedInteractions
+    
+    def addLinkEvidenceForPredExceptionInteraction(self,species,potentialPrey,interactionWeb,targetTaxaValue,WebObj,taxaGroup):
+        prey = interactionWeb[WebObj.stringNames[species]]
+        taxa = WebObj.taxa 
+        for p in prey:
+            compTaxaVal = taxa[p][taxaGroup]
+            if compTaxaVal == targetTaxaValue:
+                evidencingIDs = interactionWeb[WebObj.stringNames[species]][p]
+                self.linkEvidence[(species,potentialPrey)].extend(evidencingIDs)
 
     def handlePreyExceptions(self,WebObj,speciesWithTaxa):
         exceptions = WebObj.taxaExceptions
@@ -90,10 +100,12 @@ class MedeinaCumulativeApplication:
                 if predator in genericSpecies:
                     for potentialPrey in genericSpecies:
                         if speciesWithTaxa[potentialPrey][targetTaxa] == targetTaxaValue:
+                            evidencingIDs = WebObj.interactions[WebObj.stringNames[predator]][WebObj.stringNames[exceptedPrey]]
+                            self.linkEvidence[(predator,potentialPrey)].extend(evidencingIDs)
                             exceptedInteractions.append((predator,potentialPrey))
 
         return exceptedInteractions
-    
+
     def findPredatorsPerExceptedPrey(self,WebObj,stringNames):
         exceptions = WebObj.taxaExceptions
         interactionWeb = WebObj.interactions
@@ -120,6 +132,8 @@ class MedeinaCumulativeApplication:
             for potentialPrey in genericSpecies:
                 if speciesWithTaxa[potentialPrey][taxaLevel] in preyOfSpecies:
                     genericInteractions.append((s,potentialPrey))
+                    evidencingIDs = interactionsAtUserDefinedLevel[nameAtUserTaxaLevel][speciesWithTaxa[potentialPrey][taxaLevel]]
+                    self.linkEvidence[(s,potentialPrey)].extend(evidencingIDs)
 
         return genericInteractions
 
