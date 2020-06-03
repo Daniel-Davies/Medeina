@@ -46,9 +46,7 @@ class MedeinaCumulativeApplication:
     
     def handleApplication(self,WebObj,speciesWithTaxa,taxaLevel):
         genericInteractions = self.handleNonExceptionSpecies(WebObj,speciesWithTaxa,taxaLevel)
-        print(len(genericInteractions))
         taxaBasedInteractions = self.handleExceptionSpecies(WebObj,speciesWithTaxa)
-        print(len(taxaBasedInteractions))
         totalInteractions = [*genericInteractions,*taxaBasedInteractions]
         self.interactionStore = totalInteractions
     
@@ -63,10 +61,11 @@ class MedeinaCumulativeApplication:
         genericSpecies = list(speciesWithTaxa.keys())
         exceptedInteractions = []
         taxa = WebObj.taxa 
+        stringNames = WebObj.stringNames
         for species in exceptions:
             consumerBehaviour = exceptions[species]['consumer']
             genericSpeciesAtUserTaxa = set(list(map(lambda x: speciesWithTaxa[x][consumerBehaviour],genericSpecies)))
-            preyOfSpeciesAtTaxa = set(list(map(lambda x: taxa[x][consumerBehaviour],interactionWeb.get(species,{}).keys()))) - set([''])
+            preyOfSpeciesAtTaxa = set(list(map(lambda x: taxa[x][consumerBehaviour],interactionWeb.get(stringNames[species],{}).keys()))) - set([''])
             for potentialPrey in genericSpecies:
                 if speciesWithTaxa[potentialPrey][consumerBehaviour] in preyOfSpeciesAtTaxa:
                     exceptedInteractions.append((species,potentialPrey))
@@ -85,6 +84,7 @@ class MedeinaCumulativeApplication:
         for species in exceptions:
             predatorBucket[species] = []
 
+
         tmp = interactionWeb[IDTRACKER]
         del interactionWeb[IDTRACKER]
         for predator in interactionWeb:
@@ -95,6 +95,7 @@ class MedeinaCumulativeApplication:
         for exceptedPrey in predatorBucket:
             targetTaxa = exceptions[exceptedPrey]['resource']
             targetTaxaValue = taxa[WebObj.stringNames[exceptedPrey]][targetTaxa]
+            print(targetTaxaValue)
             if targetTaxaValue == '': continue
             for predator in predatorBucket[exceptedPrey]:
                 if predator in genericSpecies:
