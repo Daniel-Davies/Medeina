@@ -11,7 +11,7 @@ IDTRACKER = 'numericCounter-b2ca94aee362f455a41493a0d28b98bc5074065b0f96cbb95028
 
 BASEDIR = 'CompressedWebStore'
 
-TAXA_OF_INTEREST = ['kingdom','phylum','order','class','family','genus','species']
+TAXA_OF_INTEREST = ['kingdom','phylum','order','class','family','genus']
 
 APIMAX = 100
 

@@ -131,9 +131,9 @@ class Web:
         kwargsDict = dict(zip(names,newData))
         return Web(path=self.storePath, **kwargsDict)
     
-    def apply(self,species):
-        ap = MedeinaCumulativeApplication()
-        ap.apply(self,species)
+    def apply(self,species,taxaGeneralisation="exact"):
+        ap = MedeinaCumulativeApplication(self.storePath)
+        ap.apply(self,species,taxaGeneralisation)
         ap.audit()
         return ap
     

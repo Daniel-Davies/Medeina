@@ -69,7 +69,7 @@ def warnSpeciesNameFailure(individualResult):
 def assignAndStoreUniqueIdsOfSpecies(species,directory,includeInvalid=False):
     validSpecies = getTaxaAndValidateNewNames(species,directory,includeInvalid)
     if len(validSpecies) > 0: 
-        stringNames = addNewSpeciesToStringNameMapping(validSpecies,directory)
+        stringNames = addSpeciesToStringNameMapping(validSpecies,directory)
         writeTaxonomicInformation(validSpecies,directory,stringNames)
     return retrieveObjFromStore(directory,REALNAMES)
 
@@ -99,8 +99,11 @@ def getTaxaAndValidateNewNames(allSpecies,directory,includeInvalid):
     return list(filter(lambda x: x[1],speciesResponses))
 
 def processSingleResponse(response):
-    if response['is_known_name']: return (response['supplied_name_string'], True, parseSingleTaxonomyFromAPI(response))
-    return handleUnknowName(response)
+    result = []
+    if response['is_known_name']: result = (response['supplied_name_string'], True, parseSingleTaxonomyFromAPI(response))
+    result = handleUnknowName(response)
+    result[2]['species'] = result[0]
+    return result
 
 def handleUnknowName(response):
     if 'results' in response:
