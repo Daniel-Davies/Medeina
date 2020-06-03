@@ -65,6 +65,10 @@ class Web:
     def validateObsType(self,obs):
         if not all(isinstance(x,str) for x in obs):
             raise ValueError("Observation type is a string!")
+        
+    def validateInteractionType(self,obs):
+        if not all(isinstance(x,str) for x in obs):
+            raise ValueError("Interaction type is a string!")
     
     def validateLocType(self,loc):
         if not all(isinstance(x,str) for x in loc):
@@ -95,6 +99,12 @@ class Web:
         self.validateObsType(obs)
         self.logbook.append({'observationFilter':obs})
         newWeb = self.filterOnMetaData(obs,strict,filterMetasByObs)
+        return newWeb
+    
+    def filterByInteractionType(self,interactionTypes,strict=False):
+        self.validateInteractionType(interactionTypes)
+        self.logbook.append({'interactionFilter':interactionTypes})
+        newWeb = self.filterOnMetaData(interactionTypes,strict,filterMetasByInteraction)
         return newWeb
     
     def filterByCountry(self,loc,strict=False):

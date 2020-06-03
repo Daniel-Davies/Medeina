@@ -83,6 +83,11 @@ def filterMetasByCountry(linkMetas,loc,datasetMetas,strict):
     newDataset = filterDatasetMetaData(datasetMetas,strict,loc,locGenerator,'location')
     return newLinks, newDataset
 
+def filterMetasByInteraction(linkMetas,interactions,datasetMetas,strict):
+    newLinks = filterLinkMetaData(linkMetas,datasetMetas,interactions,strict,interactionGenerator,'interactionType')
+    newDataset = filterDatasetMetaData(datasetMetas,strict,interactions,interactionGenerator,'interactionType')
+    return newLinks, newDataset
+
 def filterLinkMetaData(linkMetas,datasetMetas,acceptedList,strict,generator,tag): 
     acceptedList = set(acceptedList)
     newLinks, unaccountedFor = takeMatchingFromLinkMetas(linkMetas,acceptedList,generator,tag)
@@ -117,7 +122,7 @@ def takeMatchingFromDatasetMetas(datasetMetas,newLinks,linkMetas,acceptedList,un
         indivDId = linkMetaSingle['dId']
 
         if tag not in datasetMetas[indivDId]: stillUnnacountedFor.append(link)
-        elif any(locGenerator(datasetMetas[indivDId],acceptedList)): newLinks[link] = linkMetaSingle 
+        elif any(generator(datasetMetas[indivDId],acceptedList)): newLinks[link] = linkMetaSingle 
 
     return newLinks, stillUnnacountedFor
 
@@ -133,6 +138,8 @@ def obsGenerator(val,obs):
 def locGenerator(val,loc):
     return (x == val['location']['country'] for x in loc)
 
+def interactionGenerator(val,interactions):
+    return (x == val['interactionType'] for x in interactions)
 
 def filterStringNamesByTaxaConstraints(stringNames,taxaConstraints,taxa):
     newStringNames = {}
