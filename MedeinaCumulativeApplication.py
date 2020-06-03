@@ -18,22 +18,25 @@ class MedeinaCumulativeApplication:
         return self.handleApplication(WebObj,speciesWithTaxonomy,taxaLevel)
 
     def indexSpeciesWithTaxaData(self,species,WebObj):
-        newlyEnteredSpeciesResults = self.getMissingTaxaFromAPI(species,WebObj)
-        existingTaxaDict = WebObj.taxa
-        existingStringNames = WebObj.stringNames
-
         speciesWithTaxonomy = {}
+        self.findAndIndexNewSpecies(species,WebObj,speciesWithTaxonomy)
+        self.indexRecordedSpecies(species,WebObj,speciesWithTaxonomy)
+        return speciesWithTaxonomy
+    
+    def findAndIndexNewSpecies(self,species,WebObj,speciesWithTaxonomy):
+        newlyEnteredSpeciesResults = self.getMissingTaxaFromAPI(species,WebObj)
         for name,valid,taxaDict in newlyEnteredSpeciesResults:
             if not valid: continue
             speciesWithTaxonomy[name] = taxaDict
-        
+    
+    def indexRecordedSpecies(self,species,WebObj,speciesWithTaxonomy):
+        existingTaxaDict = WebObj.taxa
+        existingStringNames = WebObj.stringNames
         for s in species:
             if s not in speciesWithTaxonomy:
                 idx = existingStringNames[s]
                 speciesWithTaxonomy[s] = existingTaxaDict[idx]
-
-        return speciesWithTaxonomy
-
+        
     def getMissingTaxaFromAPI(self,species,WebObj):
         species = list(set(species) - set(WebObj.stringNames.keys()))
         responses = []
@@ -74,28 +77,14 @@ class MedeinaCumulativeApplication:
 
     def handlePreyExceptions(self,WebObj,speciesWithTaxa):
         exceptions = WebObj.taxaExceptions
-        interactionWeb = WebObj.interactions
         taxa = WebObj.taxa
         stringNames = {v:k for k,v in WebObj.stringNames.items()}
-        predatorBucket = {} # so we only do one iteration of the web store
         exceptedInteractions = []
         genericSpecies = set(speciesWithTaxa.keys())
-
-        for species in exceptions:
-            predatorBucket[species] = []
-
-
-        tmp = interactionWeb[IDTRACKER]
-        del interactionWeb[IDTRACKER]
-        for predator in interactionWeb:
-            for prey in interactionWeb[predator]:
-                if stringNames[prey] in predatorBucket: predatorBucket[stringNames[prey]].append(stringNames[predator])
-        interactionWeb[IDTRACKER] = tmp
-
+        predatorBucket = self.findPredatorsPerExceptedPrey(WebObj,stringNames)
         for exceptedPrey in predatorBucket:
             targetTaxa = exceptions[exceptedPrey]['resource']
             targetTaxaValue = taxa[WebObj.stringNames[exceptedPrey]][targetTaxa]
-            print(targetTaxaValue)
             if targetTaxaValue == '': continue
             for predator in predatorBucket[exceptedPrey]:
                 if predator in genericSpecies:
@@ -104,6 +93,21 @@ class MedeinaCumulativeApplication:
                             exceptedInteractions.append((predator,potentialPrey))
 
         return exceptedInteractions
+    
+    def findPredatorsPerExceptedPrey(self,WebObj,stringNames):
+        exceptions = WebObj.taxaExceptions
+        interactionWeb = WebObj.interactions
+        predatorBucket = {} 
+        for species in exceptions:
+            predatorBucket[species] = []
+
+        tmp = interactionWeb[IDTRACKER]
+        del interactionWeb[IDTRACKER]
+        for predator in interactionWeb:
+            for prey in interactionWeb[predator]:
+                if stringNames[prey] in predatorBucket: predatorBucket[stringNames[prey]].append(stringNames[predator])
+        interactionWeb[IDTRACKER] = tmp
+        return predatorBucket
 
     def handleNonExceptionSpecies(self,WebObj,speciesWithTaxa,taxaLevel):
         interactionsAtUserDefinedLevel = self.buildTaxaBasedInteractions(WebObj,taxaLevel)
@@ -125,12 +129,7 @@ class MedeinaCumulativeApplication:
 
     def buildTaxaBasedInteractions(self,WebObj,taxaLevel):
         taxaBasedInteractions = {}
-        stringResource = {}
-        if taxaLevel != "species":
-            stringResource = {k:v[taxaLevel] for k,v in WebObj.taxa.items()}
-        else:
-            stringResource = {v:k for k,v in WebObj.stringNames.items()}
-        
+        stringResource = self.determineAppropriateStringMapper(WebObj,taxaLevel)
         interactions = WebObj.interactions
         tmp = interactions[IDTRACKER]
         del interactions[IDTRACKER]
@@ -143,6 +142,14 @@ class MedeinaCumulativeApplication:
 
         interactions[IDTRACKER] = tmp
         return taxaBasedInteractions
+    
+    def determineAppropriateStringMapper(self,WebObj,taxaLevel):
+        stringResource = {}
+        if taxaLevel != "species":
+            stringResource = {k:v[taxaLevel] for k,v in WebObj.taxa.items()}
+        else:
+            stringResource = {v:k for k,v in WebObj.stringNames.items()}
+        return stringResource
     
     def toList(self):
         return list(map(lambda x: (self.stringNames[x[0]],self.stringNames[x[1]]), self.interactionStore))

@@ -1,9 +1,6 @@
 from collections import defaultdict
 from config import *
 
-### Dataset ID
-#########################################################################
-
 def filterDatasetByDIds(datasetObject,dIds):
     dIds = set(dIds)
     return {k:v for k, v in datasetObject.items() if k in dIds}
