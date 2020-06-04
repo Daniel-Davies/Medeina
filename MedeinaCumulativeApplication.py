@@ -4,6 +4,7 @@ from common import *
 from collections import defaultdict
 from interactionParser import *
 import itertools
+import csv
 
 class MedeinaCumulativeApplication:
     def __init__(self,storePath):
@@ -14,6 +15,10 @@ class MedeinaCumulativeApplication:
         self.lenExcepted = 0
         self.lenGeneric = 0
         self.taxaLevel = None
+        self.interactionWeb = None
+        self.stringNames = None
+        self.links = None
+        self.datasets = None
     
     def apply(self,WebObj,species,taxaLevel="exact"):
         if taxaLevel == "exact": taxaLevel = "species"
@@ -21,6 +26,10 @@ class MedeinaCumulativeApplication:
         species = list(set(filter(lambda x: x != '',map(cleanSingleSpeciesString,species))))
         speciesWithTaxonomy = self.indexSpeciesWithTaxaData(species,WebObj)
         self.speciesLen = len(speciesWithTaxonomy)
+        self.interactionWeb = WebObj.interactions
+        self.stringNames = {v:k for k,v in WebObj.stringNames.items()}
+        self.links = WebObj.linkMetas
+        self.datasets = WebObj.datasetMetas
         return self.handleApplication(WebObj,speciesWithTaxonomy,taxaLevel)
 
     def indexSpeciesWithTaxaData(self,species,WebObj):
@@ -174,7 +183,7 @@ class MedeinaCumulativeApplication:
         return stringResource
     
     def toList(self):
-        return list(map(lambda x: (x[0],x[1]), self.interactionStore))
+        return list(map(lambda x: (x[0],x[1]), list(set(self.interactionStore))))
     
     def toGraph(self,directed=False):
         nodes = self.interactionsToNodes()
@@ -196,11 +205,65 @@ class MedeinaCumulativeApplication:
     def interactionsToNodes(self):
         return list(set(itertools.chain(*self.interactionStore)))
 
-    def audit(self):
-        print("Complete")
+    def audit(self,filepath=None):        
+        invertedLinkIndex = self.buildLinkIndex()
+        fileDumpStruct = []
+        fileDumpStruct.append(['Link Predator','Link Prey','Evidence Consumer','Evidence Prey','Interaction Type','Evidenced By','Location'])
+        for predator,prey in self.linkEvidence.keys():
+            evidencingIDs = self.linkEvidence[(predator,prey)]
+            fileDumpStruct.extend(self.handleSingleInteractionEvidence(evidencingIDs, invertedLinkIndex,predator,prey))
         
-        pass 
+        if filepath is not None:
+            self.saveAuditDataToFile(fileDumpStruct,filepath)
+        
+        return fileDumpStruct
     
+    def handleSingleInteractionEvidence(self,evidencingIDs, invertedLinkIndex, predator,prey):
+        fileDumpStruct = []
+        for idx in evidencingIDs:
+            orgPred, orgPrey = invertedLinkIndex[idx]
+            linkMetaData = self.links[idx]
+            dId = linkMetaData['dId']
+            datasetMetaData = self.datasets[dId]
+
+            interactionType = linkMetaData['interactionType'] if 'interactionType' in linkMetaData else datasetMetaData.get('interactionType','')
+            evidencedBy = linkMetaData['evidencedBy'] if 'evidencedBy' in linkMetaData else datasetMetaData.get('evidencedBy','')
+            location = linkMetaData['location'] if 'location' in linkMetaData else datasetMetaData.get('location','')
+
+            locationString = []
+            if 'region' in location:
+                locationString.append(location['region'])
+
+            if 'country' in location:
+                    locationString.append(location['country'])
+                
+            locationString = ",".join(locationString)
+            fileDumpStruct.append([predator,prey,orgPred,orgPrey,interactionType,evidencedBy,locationString])
+        
+        return fileDumpStruct
+    
+    def saveAuditDataToFile(self,fileDumpStruct,path):
+        with open(path+"/"+"audit.csv", "w", newline="") as f:
+            writer = csv.writer(f)
+            writer.writerows(fileDumpStruct)
+
+    def buildLinkIndex(self):
+        linksOfInterest = set(itertools.chain(*self.linkEvidence.values()))
+        linkIndex = {}
+
+        tmp = self.interactionWeb[IDTRACKER]
+        del self.interactionWeb[IDTRACKER]
+
+        for predator in self.interactionWeb:
+            for prey in self.interactionWeb[predator]:
+                linkIds = self.interactionWeb[predator][prey]
+                for l in linkIds:
+                    if l in linksOfInterest:
+                        linkIndex[l] = (self.stringNames[predator],self.stringNames[prey])
+
+        self.interactionWeb[IDTRACKER] = tmp
+        return linkIndex
+
     def summary(self):
         print("Application complete")
         print("--------------------")
