@@ -25,10 +25,10 @@ class Web:
             self.stringNames = kwargs['stringNames']
             self.logbook = kwargs['logbook']
     
-    def viewSessionTaxonomicExceptions(self):
+    def view_session_taxonomic_exceptions(self):
         prettyPrintDict(self.taxaExceptions)
     
-    def addTaxonomicExcpetion(self,species,consumer,resource,save=False):
+    def add_taxonomic_exception(self,species,consumer,resource,save=False):
         species, consumer, resource = self.ensureValidExceptionInput(species,consumer,resource)
         self.taxaExceptions[species] = {'consumer':consumer, 'resource':resource}
         if save:
@@ -46,7 +46,7 @@ class Web:
 
         return species, consumer, resource
 
-    def filterByDatasetId(self,dIds):
+    def filter_by_dataset_id(self,dIds):
         self.validateDIds(dIds)
         self.logbook.append({'datasetIdFilter':dIds})
         newWeb = self.replicateFoodWeb()
@@ -95,19 +95,19 @@ class Web:
         
         return newCountries
 
-    def filterByObservationType(self,obs,strict=False):
+    def filter_by_observation_type(self,obs,strict=False):
         self.validateObsType(obs)
         self.logbook.append({'observationFilter':obs})
         newWeb = self.filterOnMetaData(obs,strict,filterMetasByObs)
         return newWeb
     
-    def filterByInteractionType(self,interactionTypes,strict=False):
+    def filter_by_interaction_type(self,interactionTypes,strict=False):
         self.validateInteractionType(interactionTypes)
         self.logbook.append({'interactionFilter':interactionTypes})
         newWeb = self.filterOnMetaData(interactionTypes,strict,filterMetasByInteraction)
         return newWeb
     
-    def filterByCountry(self,loc,strict=False):
+    def filter_by_country(self,loc,strict=False):
         self.validateLocType(loc)
         loc = self.standardiseCountries(loc)
         self.logbook.append({'countryFilter':loc})

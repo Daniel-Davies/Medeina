@@ -182,10 +182,10 @@ class MedeinaCumulativeApplication:
             stringResource = {v:k for k,v in WebObj.stringNames.items()}
         return stringResource
     
-    def toList(self):
+    def to_list(self):
         return list(map(lambda x: (x[0],x[1]), list(set(self.interactionStore))))
     
-    def toGraph(self,directed=False):
+    def to_graph(self,directed=False):
         nodes = self.interactionsToNodes()
         G = nx.Graph()
         if directed: G = nx.DiGraph()
@@ -197,7 +197,7 @@ class MedeinaCumulativeApplication:
         
         return G
 
-    def toMatrix(self):
+    def to_matrix(self):
         G = self.toGraph()
         nodeOrder = self.interactionsToNodes()
         return nx.to_numpy_matrix(G,nodelist=nodeOrder), nodeOrder
