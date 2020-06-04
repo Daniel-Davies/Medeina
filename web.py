@@ -144,7 +144,7 @@ class Web:
     def apply(self,species,taxaGeneralisation="exact"):
         ap = MedeinaCumulativeApplication(self.storePath)
         ap.apply(self,species,taxaGeneralisation)
-        ap.audit()
+        ap.summary()
         return ap
     
     def reIndex(self):

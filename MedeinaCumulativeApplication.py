@@ -10,11 +10,17 @@ class MedeinaCumulativeApplication:
         self.interactionStore = []
         self.linkEvidence = defaultdict(list)
         self.storePath = storePath
+        self.speciesLen = 0
+        self.lenExcepted = 0
+        self.lenGeneric = 0
+        self.taxaLevel = None
     
     def apply(self,WebObj,species,taxaLevel="exact"):
         if taxaLevel == "exact": taxaLevel = "species"
+        self.taxaLevel = taxaLevel
         species = list(set(filter(lambda x: x != '',map(cleanSingleSpeciesString,species))))
         speciesWithTaxonomy = self.indexSpeciesWithTaxaData(species,WebObj)
+        self.speciesLen = len(speciesWithTaxonomy)
         return self.handleApplication(WebObj,speciesWithTaxonomy,taxaLevel)
 
     def indexSpeciesWithTaxaData(self,species,WebObj):
@@ -50,6 +56,8 @@ class MedeinaCumulativeApplication:
     def handleApplication(self,WebObj,speciesWithTaxa,taxaLevel):
         genericInteractions = self.handleNonExceptionSpecies(WebObj,speciesWithTaxa,taxaLevel)
         taxaBasedInteractions = self.handleExceptionSpecies(WebObj,speciesWithTaxa)
+        self.lenExcepted = len(taxaBasedInteractions)
+        self.lenGeneric = len(genericInteractions)
         totalInteractions = [*genericInteractions,*taxaBasedInteractions]
         self.interactionStore = totalInteractions
     
@@ -190,4 +198,15 @@ class MedeinaCumulativeApplication:
 
     def audit(self):
         print("Complete")
+        
         pass 
+    
+    def summary(self):
+        print("Application complete")
+        print("--------------------")
+        print("User provided " + str(self.speciesLen) + " unique, valid species")
+        print("Found " + str(len(self.linkEvidence)) + " unique interactions")
+        print("Captured " + str(self.lenGeneric) + " interactions using the \"" + self.taxaLevel + "\" level")
+        print("Captured " + str(self.lenExcepted) + " interactions from taxonomic exceptions")
+        print("Involvement of " + str(len(set(itertools.chain(*self.linkEvidence.keys())))) + " user provided species captured")
+        print("Percentage of user provided species involved in this application: " + str(len(set(itertools.chain(*self.linkEvidence.keys())))*100 / self.speciesLen ) + "%") 
