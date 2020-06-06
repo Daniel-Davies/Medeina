@@ -2,7 +2,6 @@ from config import *
 import pickle
 from os import path
 import pathlib
-import pandas as pd
 from collections import defaultdict
 import requests
 import itertools

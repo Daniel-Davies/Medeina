@@ -1,12 +1,15 @@
 import pathlib
 import pandas as pd
-from dataCleaning import cleanHeadTailTupleData
-from config import LINK_METAS
+from dataCleaning import cleanHeadTailTupleData, cleanSingleSpeciesString
+from config import LINK_METAS, PRECOMPUTER_STORE_PATH
 import re
+import pickle 
+import itertools
 
 def parseSpeciesInteractionCells(parsedSpecificationString):
     graphType = parsedSpecificationString['encoding']
     stringPairs = collectFromAppropriateHandlerMethod(graphType)
+    stringPairs = translateWithPreComputedStore(stringPairs)
     stringPairs = cleanHeadTailTupleData(stringPairs)
     return stringPairs
 
@@ -133,3 +136,39 @@ def readContentAsDataFrame(dataPath,header='infer'):
     data = data.dropna(axis=1, how='all')
     data = data.dropna(axis=0, how='all')
     return data
+
+def translateWithPreComputedStore(stringPairs):
+    if preComputedStoreExists():
+        with open(PRECOMPUTER_STORE_PATH, 'rb') as fh:
+            preComputedTranslationMapping = pickle.load(fh)
+            stringPairs = createTranslatedStringPairs(stringPairs,preComputedTranslationMapping)
+    return stringPairs
+
+def createTranslatedStringPairs(stringPairs,preComputedTranslationMapping):
+    newStringPairs = []
+    for pred,prey,meta in stringPairs:
+        pred = cleanSingleSpeciesString(pred,False)
+        prey = cleanSingleSpeciesString(prey,False)
+        pred = translateStringToMapping(preComputedTranslationMapping,pred)
+        prey = translateStringToMapping(preComputedTranslationMapping,prey)
+        newInteractions = list(itertools.product(pred,prey))
+        newInteractions = list(map(lambda x: (x[0],x[1],meta), newInteractions))
+        newStringPairs.extend(newInteractions)
+    
+    return newStringPairs
+
+def translateStringToMapping(preComputedTranslationMapping,string):
+    if string not in preComputedTranslationMapping:
+        return [string]
+    
+    newData = preComputedTranslationMapping[string][1]
+    if isinstance(newData,list): 
+        if newData[0] == '': return [string]
+        return newData
+    if isinstance(newData,str):
+        if newData == '': return [string] 
+        return [newData]
+    raise ValueError("Index Mapper in inconsistent state; entries must be string or list only")
+
+def preComputedStoreExists():
+    return pathlib.Path(PRECOMPUTER_STORE_PATH).is_file()
