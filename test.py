@@ -13,26 +13,26 @@ import matplotlib.pyplot as plt
 # plt.show()
 
 dct = {}
-# dct['interactionType'] = 'pollination'
-# dct['location'] = "Other Lake,Ukraine"
-# dct['evidencedBy'] = "observation"
-
-# dct['encoding'] = {}
-# dct['encoding']['interactionFormat'] = 'pair'
-# dct['encoding']['head'] = 'consumer'
-# dct['encoding']['tail'] = 'resource'
-# dct['encoding']['path'] = "C:/Users/davie/Desktop/Masters/Dissertation/Code/DissertationCode/Eigg/Utilities/RelevantDatasets/production/freshwater.csv"
+dct['interactionType'] = 'pollination'
+dct['location'] = "Other Lake,Ukraine"
+dct['evidencedBy'] = "observation"
 
 dct['encoding'] = {}
-dct['encoding']['interactionFormat'] = 'matrix'
-dct['encoding']['headingCorner'] = '(3,2)'
-dct['encoding']['dataCorner'] = '(5,4)'
-dct['encoding']['nameDepth'] = 2
-dct['encoding']['metaData'] = [{'orientation': 'col', 'name': 'order', 'index':2 },{'orientation': 'row', 'name': 'ind', 'index':1 }]
-# dct['encoding']['head'] = 'consumer'
-# dct['encoding']['tail'] = 'resource'
-# dct['encoding']['evidencedBy'] = 'link.evidence'
-dct['encoding']['path'] = "C:/Users/davie/Desktop/Masters/Dissertation/Code/DissertationCode/Eigg/Utilities/RelevantDatasets/production/janePollinators.csv"
+dct['encoding']['interactionFormat'] = 'pair'
+dct['encoding']['head'] = 'consumer'
+dct['encoding']['tail'] = 'resource'
+dct['encoding']['path'] = "C:/Users/davie/Desktop/Masters/Dissertation/Code/DissertationCode/Eigg/Utilities/RelevantDatasets/production/freshwater.csv"
+
+# dct['encoding'] = {}
+# dct['encoding']['interactionFormat'] = 'matrix'
+# dct['encoding']['headingCorner'] = '(3,2)'
+# dct['encoding']['dataCorner'] = '(5,4)'
+# dct['encoding']['nameDepth'] = 2
+# dct['encoding']['metaData'] = [{'orientation': 'col', 'name': 'order', 'index':2 },{'orientation': 'row', 'name': 'ind', 'index':1 }]
+# # dct['encoding']['head'] = 'consumer'
+# # dct['encoding']['tail'] = 'resource'
+# # dct['encoding']['evidencedBy'] = 'link.evidence'
+# dct['encoding']['path'] = "C:/Users/davie/Desktop/Masters/Dissertation/Code/DissertationCode/Eigg/Utilities/RelevantDatasets/production/janePollinators.csv"
 
 
 # jsonString = json.dumps(json.loads("{\"path\": \"C:/Users/davie/Downloads/test.csv\", \"interactionType\": \"trophic\", \"encoding\":{\"interactionFormat\":\"pair\", \"head\":\"consumer\",\"tail\":\"resource\" }}"))

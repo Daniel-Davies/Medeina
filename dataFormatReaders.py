@@ -141,8 +141,16 @@ def translateWithPreComputedStore(stringPairs):
     if preComputedStoreExists():
         with open(PRECOMPUTER_STORE_PATH, 'rb') as fh:
             preComputedTranslationMapping = pickle.load(fh)
+            preComputedTranslationMapping = subTranslatedNamesForKeys(preComputedTranslationMapping)
             stringPairs = createTranslatedStringPairs(stringPairs,preComputedTranslationMapping)
     return stringPairs
+
+def subTranslatedNamesForKeys(preComputedTranslationMapping):
+    newIndex = {}
+    for name in preComputedTranslationMapping:
+        cleanedName, translations = preComputedTranslationMapping[name]
+        newIndex[cleanedName] = [name,translations]
+    return newIndex
 
 def createTranslatedStringPairs(stringPairs,preComputedTranslationMapping):
     newStringPairs = []
@@ -161,14 +169,10 @@ def translateStringToMapping(preComputedTranslationMapping,string):
     if string not in preComputedTranslationMapping:
         return [string]
     
-    newData = preComputedTranslationMapping[string][1]
-    if isinstance(newData,list): 
-        if newData[0] == '': return [string]
-        return newData
-    if isinstance(newData,str):
-        if newData == '': return [string] 
-        return [newData]
-    raise ValueError("Index Mapper in inconsistent state; entries must be string or list only")
+    translatedName, value = preComputedTranslationMapping[string]
+    if translatedName == '': return [string] 
+    if len(value) == 0: return [string] 
+    return value
 
 def preComputedStoreExists():
     return pathlib.Path(PRECOMPUTER_STORE_PATH).is_file()
