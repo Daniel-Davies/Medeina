@@ -56,7 +56,7 @@ def extractColBasedMetadata(graphType,df,dataCoord):
     return processMatrixMetaDataAtOrientation(graphType,'col',lambda x: (x[0],df.iloc[:,x[1]].values.tolist()),dataCoord[1])
 
 def processMatrixMetaDataAtOrientation(graphType,orientation,processFn,startOfData):
-    userProvidedColData = list(filter(lambda x: x['orientation']==orientation, graphType['metaData']))
+    userProvidedColData = list(filter(lambda x: x['orientation']==orientation, graphType.get('metaData',[])))
     userProvidedColData = list(map(lambda x: (x['name'],int(x['index'])-1), userProvidedColData))
     valuesOfInterest = list(map(processFn, userProvidedColData)) 
     nonNullOrIrrelevantRows = list(map(lambda x: (x[0], x[1][startOfData:]), valuesOfInterest))
