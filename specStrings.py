@@ -85,6 +85,25 @@ def Otago():
 
     return [dct]
 
+
+def Mangal():
+    filenames = os.listdir("C:/Users/davie/Desktop/Masters/Dissertation/Code/DissertationCode/Eigg/Utilities/RelevantDatasets/production/Mangal")
+    dcts = []
+    for f in filenames:
+        dct = {}
+
+        dct['source'] = f[:-4]+" (aka network-id) from Mangal.io"
+
+        dct['encoding'] = {}
+        dct['encoding']['interactionFormat'] = 'pair'
+        dct['encoding']['head'] = 'Predator'
+        dct['encoding']['tail'] = 'Prey'
+        dct['encoding']['path'] = "C:/Users/davie/Desktop/Masters/Dissertation/Code/DissertationCode/Eigg/Utilities/RelevantDatasets/production/Mangal"+f
+
+        dcts.append(dct)
+
+    return dcts
+
 ########################################
 ############# Matrix Based #############
 ########################################
@@ -299,3 +318,37 @@ def US_Grasslands():
     dct['encoding']['nameDepth'] = 2
     dct['encoding']['path'] = "C:/Users/davie/Desktop/Masters/Dissertation/Code/DissertationCode/Eigg/Utilities/RelevantDatasets/production/BaseCSV/US_Grasslands.xls"
     return [dct] 
+
+def US_Grasslands():
+    dct = {}
+
+    dct['interactionType'] = 'predation'
+    dct['location'] = 'United States'
+
+    dct['encoding'] = {}
+    dct['encoding']['interactionFormat'] = 'matrix'
+    dct['encoding']['headingCorner'] = '(2,2)'
+    dct['encoding']['dataCorner'] = '(5,5)'
+    dct['encoding']['nameDepth'] = 2
+    dct['encoding']['path'] = "C:/Users/davie/Desktop/Masters/Dissertation/Code/DissertationCode/Eigg/Utilities/RelevantDatasets/production/BaseCSV/US_Grasslands.xls"
+    return [dct] 
+
+def EcoWeb():
+    filenames = os.listdir("C:/Users/davie/Desktop/Masters/Dissertation/Code/DissertationCode/Eigg/Utilities/RelevantDatasets/production/EcoWeb")
+    dcts = []
+    for f in filenames:
+        dct = {}
+
+        dct['source'] = f[:-4]+" from Cohen, J. E. (compiler) 2010. Ecologists' Co-Operative Web Bank. Version 1.1. Machine-readable database of food webs. New York: The Rockefeller University."
+        dct['interactionType'] = 'predation'
+
+        dct['encoding'] = {}
+        dct['encoding']['interactionFormat'] = 'matrix'
+        dct['encoding']['headingCorner'] = '(1,1)'
+        dct['encoding']['dataCorner'] = '(2,2)'
+        dct['encoding']['nameDepth'] = 1
+        dct['encoding']['path'] = "C:/Users/davie/Desktop/Masters/Dissertation/Code/DissertationCode/Eigg/Utilities/RelevantDatasets/production/EcoWeb"+"/"+f
+
+        dcts.append(dct)
+
+    return dcts

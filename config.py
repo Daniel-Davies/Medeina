@@ -20,4 +20,4 @@ APIURL = "http://resolver.globalnames.org/name_resolvers.json"
 DATASET_METAS = ['interactionType','evidencedBy','webName','citation','location','date']
 LINK_METAS = ['interactionType','evidencedBy','location']
 
-PRECOMPUTER_STORE_PATH = 'TaxaMapper/mappingIndex'
+PRECOMPUTER_STORE_PATH = 'TaxaMapper/newMappingIndex'
