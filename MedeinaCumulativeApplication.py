@@ -5,7 +5,6 @@ from collections import defaultdict
 from interactionParser import *
 import itertools
 import csv
-from preTranslatedIndexTools import *
 
 class MedeinaCumulativeApplication:
     def __init__(self,storePath):
@@ -24,7 +23,6 @@ class MedeinaCumulativeApplication:
     def apply(self,WebObj,species,taxaLevel="exact"):
         if taxaLevel == "exact": taxaLevel = "species"
         self.taxaLevel = taxaLevel
-        if preComputedStoreExists(): species = self.translateFromPrecomputedStore(species)
         species = list(map(cleanSingleSpeciesString,species))
         speciesWithTaxonomy = self.indexSpeciesWithTaxaData(species,WebObj)
         self.speciesLen = len(speciesWithTaxonomy)
@@ -33,12 +31,6 @@ class MedeinaCumulativeApplication:
         self.links = WebObj.linkMetas
         self.datasets = WebObj.datasetMetas
         return self.handleApplication(WebObj,speciesWithTaxonomy,taxaLevel)
-    
-    def translateFromPrecomputedStore(self,species):
-        species = list(map(lambda x: cleanSingleSpeciesString(x,False),species))
-        preComputedTranslationMapping = retrievePreComputedTranslationMapping()
-        species = list(map(lambda x: translateStringToMapping(preComputedTranslationMapping,x),species))
-        return list(itertools.chain(*species)) 
 
     def indexSpeciesWithTaxaData(self,species,WebObj):
         speciesWithTaxonomy = {}

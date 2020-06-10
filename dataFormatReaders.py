@@ -5,13 +5,12 @@ from config import LINK_METAS, PRECOMPUTER_STORE_PATH
 import re
 import pickle 
 import itertools
-from preTranslatedIndexTools import *
 
 def parseSpeciesInteractionCells(parsedSpecificationString):
     graphType = parsedSpecificationString['encoding']
     stringPairs = collectFromAppropriateHandlerMethod(graphType)
-    stringPairs = translateWithPreComputedStore(stringPairs)
     stringPairs = cleanHeadTailTupleData(stringPairs)
+    stringPairs = translateToSpeciesScientificFormatOnly(stringPairs)
     return stringPairs
 
 def collectFromAppropriateHandlerMethod(graphType):
@@ -156,3 +155,9 @@ def createTranslatedStringPairs(stringPairs,preComputedTranslationMapping):
         newStringPairs.extend(newInteractions)
     
     return newStringPairs
+
+def translateToSpeciesScientificFormatOnly(cleanedHeadTailTupleData):
+    speciesOnly = list(itertools.chain(*cleanedHeadTailTupleData))
+    print(speciesOnlys)
+    return speciesOnly
+    

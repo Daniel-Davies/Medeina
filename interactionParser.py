@@ -86,9 +86,8 @@ def writeTaxonomicInformation(validSpeciesResponses,directory,stringNameMapper):
         existingTaxaData[sId] = taxaDict
     writeObjToDateStore(directory, TAXA, existingTaxaData)
 
-def getTaxaAndValidateNewNames(allSpecies,directory,includeInvalid):
-    species = determineTaxonomicGaps(allSpecies,directory)
-    responses = []
+def getTaxaAndValidateNewNames(allSpeciesFound,directory,includeInvalid):
+    speciesToProcess = determineTaxonomicGaps(allSpeciesFound,directory)
     for i in range(0,len(species),APIMAX):
         print("Indexing records " + str(i) + " to " + str(min(len(species),i+APIMAX)) + " [of "+str(len(species))+"]")
         responses.extend(callAPIOnDataList(species[i:i+APIMAX]))
