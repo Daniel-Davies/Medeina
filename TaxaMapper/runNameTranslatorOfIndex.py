@@ -16,7 +16,8 @@ with open("newMappingIndex",'rb') as f:
 counter = 0
 for name in index:
     if len(index[name][1]) == 0 or index[name] == ('',''):
-        print(name,index[name])
-        counter += 1
+        pass
+        # print(name,index[name])
+    counter += 1
 
 print(counter)

@@ -5,14 +5,15 @@ import requests
 from Web import Web
 import networkx as nx
 import matplotlib.pyplot as plt
-from specStrings import EcoWeb
+from specStrings import Mangal
 
-dct = EcoWeb()[0]
-WebStore().add_interactions(dct)
-dct = EcoWeb()[20]
-WebStore().add_interactions(dct)
-dct = EcoWeb()[100]
-WebStore().add_interactions(dct)
+# dct = Mangal()[0]
+# WebStore().add_interactions(dct)
+# dct = Mangal()[10]
+# WebStore().add_interactions(dct)
+# dct = Mangal()[143]
+# WebStore().add_interactions(dct)
+
 # f = Web()
 # x = f.apply(['ancylus fluviatilis','navicula gregaria','blackbird'])
 # y = x.to_list()

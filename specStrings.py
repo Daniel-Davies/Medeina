@@ -98,7 +98,7 @@ def Mangal():
         dct['encoding']['interactionFormat'] = 'pair'
         dct['encoding']['head'] = 'Predator'
         dct['encoding']['tail'] = 'Prey'
-        dct['encoding']['path'] = "C:/Users/davie/Desktop/Masters/Dissertation/Code/DissertationCode/Eigg/Utilities/RelevantDatasets/production/Mangal"+f
+        dct['encoding']['path'] = "C:/Users/davie/Desktop/Masters/Dissertation/Code/DissertationCode/Eigg/Utilities/RelevantDatasets/production/Mangal/"+f
 
         dcts.append(dct)
 
