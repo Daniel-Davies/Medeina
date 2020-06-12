@@ -1,14 +1,10 @@
 from .config import *
-import pickle
-from os import path
-import pathlib
 import itertools
 import operator 
 from .common import *
+from .parsingFunctionality import *
 from .dataFormatReaders import parseSpeciesInteractionCells
 import pycountry
-from EcoNameTranslator import EcoNameTranslator
-import requests
 from .dataCleaning import cleanHeadTailTupleData
 from .externalAPIs import translateToSpeciesScientificFormatOnly, retrieveTaxonomicDataFromAPI
 
@@ -64,7 +60,6 @@ def writeInteractionLinks(consumableData,dId,directory):
 
 def processLinkMetaData(meta,dId):
     meta['dId'] = dId
-    if 'location' in meta: meta['location'] = standardiseLocationData(meta['location'])
     return meta
 
 def indexTranslatedSpecies(species,parsedSpecificationString):

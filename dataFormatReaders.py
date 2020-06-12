@@ -3,7 +3,6 @@ import pandas as pd
 from .dataCleaning import cleanHeadTailTupleData, cleanSingleSpeciesString
 from .config import LINK_METAS, PRECOMPUTER_STORE_PATH
 import re
-import pickle 
 import itertools
 
 def parseSpeciesInteractionCells(parsedSpecificationString):

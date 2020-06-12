@@ -1,24 +1,27 @@
 from EcoNameTranslator import EcoNameTranslator
 import requests
-from .common import makeUnique, keepInteractionPartOnly, mostCommonInList
+from .parsingFunctionality import *
 import itertools
 from .config import *
+from .common import mostCommonInList
 
 #########Translation
 
 def translateToSpeciesScientificFormatOnly(cleanedHeadTailTupleData):
     speciesList = list(set(itertools.chain(*keepInteractionPartOnly(cleanedHeadTailTupleData))))
     speciesMapping = EcoNameTranslator().translate(speciesList)
-    cleanedHeadTailTupleData = list(map( \
-                                        lambda x: (speciesMapping[x[0]][1], speciesMapping[x[1]][1],x[2]), \
-                                    cleanedHeadTailTupleData))
-    cleanedHeadTailTupleData = list(map( \
-                                        lambda x: (list(itertools.product(x[0],x[1])),x[2]), \
-                                    cleanedHeadTailTupleData))
-    cleanedHeadTailTupleData = list(filter(lambda x: len(x[0]) > 0,cleanedHeadTailTupleData))
-    cleanedHeadTailTupleData = list(map( \
-                                        lambda x: [(pred,prey,x[1]) for pred,prey in x[0]], \
-                                    cleanedHeadTailTupleData))
+    cleanedHeadTailTupleData = map(lambda x: \
+                                    (speciesMapping[x[0]][1], speciesMapping[x[1]][1],x[2]), \
+                                    cleanedHeadTailTupleData \
+                               )
+    cleanedHeadTailTupleData = map(lambda x: \
+                                    (list(itertools.product(x[0],x[1])),x[2]), \
+                                    cleanedHeadTailTupleData \
+                               )
+    cleanedHeadTailTupleData = map(lambda x: 
+                                    [(pred,prey,x[1]) for pred,prey in x[0]], \
+                                    cleanedHeadTailTupleData \
+                               )
     cleanedHeadTailTupleData = list(itertools.chain(*cleanedHeadTailTupleData))
     cleanedHeadTailTupleData = makeUnique(cleanedHeadTailTupleData)
     return cleanedHeadTailTupleData
