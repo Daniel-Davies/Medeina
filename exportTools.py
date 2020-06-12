@@ -1,8 +1,8 @@
 
 import pickle
-from common import writeObjToDateStore, retrieveObjFromStore
+from .common import writeObjToDateStore, retrieveObjFromStore
 import json
-from config import *
+from .config import *
 
 def denormaliseData(columns=[],datasets=[]):
     datasets = datasetsToNormalise(datasets)

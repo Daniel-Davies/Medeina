@@ -1,9 +1,9 @@
-from common import *
-from config import *
-from dataCleaning import cleanSingleSpeciesString
-from filterFunctions import *
+from .common import *
+from .config import *
+from .dataCleaning import cleanSingleSpeciesString
+from .filterFunctions import *
 import pycountry
-from MedeinaCumulativeApplication import MedeinaCumulativeApplication
+from .MedeinaCumulativeApplication import MedeinaCumulativeApplication
 
 class Web:
     def __init__(self,path=BASEDIR,*args,**kwargs):

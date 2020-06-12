@@ -1,8 +1,8 @@
-from dataCleaning import cleanSingleSpeciesString
+from .dataCleaning import cleanSingleSpeciesString
 import networkx as nx
-from common import *
+from .common import *
 from collections import defaultdict
-from interactionParser import *
+from .interactionParser import *
 import itertools
 import csv
 
@@ -49,6 +49,7 @@ class MedeinaCumulativeApplication:
         existingStringNames = WebObj.stringNames
         for s in species:
             if s not in speciesWithTaxonomy:
+                print(s)
                 idx = existingStringNames[s]
                 speciesWithTaxonomy[s] = existingTaxaDict[idx]
         

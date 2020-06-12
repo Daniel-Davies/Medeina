@@ -1,20 +1,39 @@
-from config import *
+from .config import *
 import pickle
 from os import path
 import pathlib
-from collections import defaultdict
-import requests
 import itertools
 import operator 
-from common import writeObjToDateStore, retrieveObjFromStore, mostCommonInList
-from dataFormatReaders import parseSpeciesInteractionCells
+from .common import *
+from .dataFormatReaders import parseSpeciesInteractionCells
 import pycountry
+from EcoNameTranslator import EcoNameTranslator
+import requests
+from .dataCleaning import cleanHeadTailTupleData
+from .externalAPIs import translateToSpeciesScientificFormatOnly, retrieveTaxonomicDataFromAPI
 
 def saveNewData(parsedSpecificationString):
     dId = createNewDatasetRecord(parsedSpecificationString)
     stringHeadTailData = parseSpeciesInteractionCells(parsedSpecificationString) 
-    standardHeadTailData = storeSpeciesData(stringHeadTailData,parsedSpecificationString['storageLocation'],parsedSpecificationString['includeInvalid'])
-    writeInteractionLinks(standardHeadTailData,dId,parsedSpecificationString['storageLocation'])
+    stringHeadTailData = makeUnique(stringHeadTailData)
+    stringHeadTailData = translateToSpeciesScientificFormatOnly(stringHeadTailData)
+    stringHeadTailData = cleanHeadTailTupleData(stringHeadTailData)
+    speciesMappingToId = indexTranslatedSpecies(stringHeadTailData,parsedSpecificationString)
+    stringHeadTailData = filterUnindexableSpecies(stringHeadTailData,speciesMappingToId,parsedSpecificationString)
+    writeInteractionLinks(stringHeadTailData,dId,parsedSpecificationString['storageLocation'])
+
+def filterUnindexableSpecies(species,speciesMappingToId,parsedSpecificationString):
+    directory = parsedSpecificationString['storageLocation']
+    includeInvalid = parsedSpecificationString['includeInvalid']
+    return  list( \
+                map(lambda x: \
+                    (speciesMappingToId[x[0]], speciesMappingToId[x[1]], x[2]), \
+                    filter(lambda x: \
+                        verifyValidInteraction(speciesMappingToId,x), \
+                        species \
+                    ) \
+                ) \
+            )
 
 def createNewDatasetRecord(parsedSpecificationString):
     datasetMeta = takeDatasetMetaData(parsedSpecificationString)
@@ -24,26 +43,17 @@ def createNewDatasetRecord(parsedSpecificationString):
     writeObjToDateStore(parsedSpecificationString['storageLocation'],DATASETS,existing)
     return newId
 
-def storeSpeciesData(stringHeadTailData,directory,includeInvalid):
-    headTailOnly = keepInteractionPartOnly(stringHeadTailData)
-    speciesMapping = assignAndStoreUniqueIdsOfSpecies(itertools.chain(*headTailOnly),directory,includeInvalid)
-    return list(map(lambda x: (speciesMapping[x[0]], speciesMapping[x[1]], x[2]),filter(lambda x: verifyValidInteraction(speciesMapping,x), stringHeadTailData)))
-
-def verifyValidInteraction(speciesMapping,indivSpeciesInteraction):
-    head,tail,meta = indivSpeciesInteraction
-    return head in speciesMapping and tail in speciesMapping
-
-def keepInteractionPartOnly(headTailDataWMeta):
-    return list(map(lambda tup: (tup[0],tup[1]),headTailDataWMeta))
-
 def writeInteractionLinks(consumableData,dId,directory):
     existingWeb = retrieveObjFromStore(directory,WEB)
     existingLinks = retrieveObjFromStore(directory,LINKS)
     currentLinkId = existingWeb[IDTRACKER]
 
     for predator, prey, meta in consumableData:
-        if predator not in existingWeb: existingWeb[predator] = defaultdict(list)
-        
+        if predator not in existingWeb: 
+            existingWeb[predator] = {}
+        if prey not in existingWeb[predator]:
+            existingWeb[predator][prey] = []
+
         existingWeb[predator][prey].append(currentLinkId)
         existingLinks[currentLinkId] = processLinkMetaData(meta,dId)
         currentLinkId += 1
@@ -57,15 +67,10 @@ def processLinkMetaData(meta,dId):
     if 'location' in meta: meta['location'] = standardiseLocationData(meta['location'])
     return meta
 
-def callAPIOnDataList(speciesNamesList):
-    apiString = "|".join(speciesNamesList)
-    callToValidateNames = requests.get(f'{APIURL}?names={apiString}')
-    return callToValidateNames.json()['data']
-
-def warnSpeciesNameFailure(individualResult):
-    print("Could not index " + str(individualResult['supplied_name_string']))
-
-def assignAndStoreUniqueIdsOfSpecies(species,directory,includeInvalid=False):
+def indexTranslatedSpecies(species,parsedSpecificationString):
+    directory = parsedSpecificationString['storageLocation'] 
+    includeInvalid = parsedSpecificationString['includeInvalid']
+    species = list(set(itertools.chain(*keepInteractionPartOnly(species))))
     validSpecies = getTaxaAndValidateNewNames(species,directory,includeInvalid)
     if len(validSpecies) > 0: 
         stringNames = addSpeciesToStringNameMapping(validSpecies,directory)
@@ -87,61 +92,13 @@ def writeTaxonomicInformation(validSpeciesResponses,directory,stringNameMapper):
     writeObjToDateStore(directory, TAXA, existingTaxaData)
 
 def getTaxaAndValidateNewNames(allSpeciesFound,directory,includeInvalid):
-    speciesToProcess = determineTaxonomicGaps(allSpeciesFound,directory)
-    for i in range(0,len(species),APIMAX):
-        print("Indexing records " + str(i) + " to " + str(min(len(species),i+APIMAX)) + " [of "+str(len(species))+"]")
-        responses.extend(callAPIOnDataList(species[i:i+APIMAX]))
-
-    speciesResponses = list(map(processSingleResponse,responses))
-    if includeInvalid: return speciesResponses
-    return list(filter(lambda x: x[1],speciesResponses))
-
-def processSingleResponse(response):
-    result = []
-    if response['is_known_name']: result = (response['supplied_name_string'], True, parseSingleTaxonomyFromAPI(response))
-    result = handleUnknowName(response)
-    result[2]['species'] = result[0]
-    return result
-
-def handleUnknowName(response):
-    if 'results' in response:
-        return (response['supplied_name_string'], True, parseSingleTaxonomyFromAPI(response))
-    else:
-        warnSpeciesNameFailure(response)
-        return (response['supplied_name_string'], False, {})
+    species = determineTaxonomicGaps(allSpeciesFound,directory)
+    stringToTaxaTuples = retrieveTaxonomicDataFromAPI(species,includeInvalid)
+    return stringToTaxaTuples
     
 def determineTaxonomicGaps(species,directory):
     stringNameMapper = retrieveObjFromStore(directory,REALNAMES)
     return list(set(species) - set(stringNameMapper.keys()))
-
-def parseSingleTaxonomyFromAPI(taxonomicAPIres):
-    dataFromMultipleSources = taxonomicAPIres['results']
-    dataFromMultipleSources = map(extractTaxaData,dataFromMultipleSources)
-    return runConsensusForSingleSpecies(dataFromMultipleSources)
-    
-def extractTaxaData(singleTaxaSource):
-    mappingDict = {}
-    try: mappingDict = dict(zip(singleTaxaSource['classification_path_ranks'].lower().split("|"),\
-                                singleTaxaSource['classification_path'].lower().split("|")))
-    except: pass
-    return mappingDict
-
-def runConsensusForSingleSpecies(individualDictionaryMappings):
-    finalMapping = {}
-    individualDictionaryMappings = list(individualDictionaryMappings)
-    for taxaRank in TAXA_OF_INTEREST:
-        finalMapping[taxaRank] = runConsensusOnSingleTaxa(taxaRank,individualDictionaryMappings)
-        
-    return finalMapping
-
-def runConsensusOnSingleTaxa(taxaRank,individualDictionaryMappings):
-    allItemsOfTaxa = []
-    for singleMapping in individualDictionaryMappings:
-        val = singleMapping.get(taxaRank,'')
-        if len(val) > 0: allItemsOfTaxa.append(val)
-    
-    if len(allItemsOfTaxa) == 0: return ''
-    return mostCommonInList(allItemsOfTaxa)
 
 def takeDatasetMetaData(parsedSpecificationString):
     joinedMetas = {item: parsedSpecificationString[item] for item in DATASET_METAS if item in parsedSpecificationString}
@@ -157,3 +114,5 @@ def standardiseLocationData(location):
     
     country = mostCommonInList(indivLocations)
     return {'region': ",".join(indivLocations[::-1][:-1]), 'country':country}
+
+    

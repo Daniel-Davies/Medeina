@@ -1,10 +1,10 @@
 import json 
-from interactionParser import saveNewData
-from config import *
+from .interactionParser import saveNewData
+from .config import *
 from os import path
 import pickle
-from common import writeObjToDateStore, retrieveObjFromStore
-from exportTools import denormaliseData
+from .common import writeObjToDateStore, retrieveObjFromStore
+from .exportTools import denormaliseData
 import csv
 
 class WebStore:
@@ -16,20 +16,17 @@ class WebStore:
 
     def assureExistence(self,file_):
         if not path.exists(f'{self.storePath}/{file_}'):
-            with open(f'{self.storePath}/{file_}','wb') as fh:
-                pickle.dump({},fh)
-    
+            writeObjToDateStore(self.storePath,file_,{})
+
     def initialiseLinkIdTracker(self):
         changeDetected = False
-        with open(f'{self.storePath}/{WEB}','rb') as fh:
-            existingWeb = pickle.load(fh)
-            if IDTRACKER not in existingWeb:
-                existingWeb[IDTRACKER] = 0
-                changeDetected = True 
+        existingWeb = retrieveObjFromStore(self.storePath,WEB)
+        if IDTRACKER not in existingWeb:
+            existingWeb[IDTRACKER] = 0
+            changeDetected = True 
         
         if changeDetected:
-            with open(f'{self.storePath}/{WEB}','wb') as fh:
-                pickle.dump(existingWeb,fh)
+            writeObjToDateStore(self.storePath,WEB,existingWeb)
 
     def add_interactions(self,userIn,includeInvalid=False):
         jsonFormattedSpecificationString = self.parseUserInputToStandardJsonString(userIn) 

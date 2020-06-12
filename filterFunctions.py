@@ -1,5 +1,4 @@
-from collections import defaultdict
-from config import *
+from .config import *
 
 def filterDatasetByDIds(datasetObject,dIds):
     dIds = set(dIds)
@@ -23,7 +22,11 @@ def createNewInteractionDict(newInteractions,dict_,linkMetas):
         for prey in dict_[predator]:
             newAddition = list(filter(lambda x: x in linkMetas,dict_[predator][prey]))
             if len(newAddition) != 0:
-                if predator not in newInteractions: newInteractions[predator] = defaultdict(list)
+                if predator not in newInteractions: 
+                    newInteractions[predator] = {}
+                
+                if prey not in newInteractions[predator]:
+                    newInteractions[predator][prey] = []
                 newInteractions[predator][prey].extend(newAddition)
     return newInteractions
 
@@ -169,8 +172,11 @@ def matchesConstraints(speciesTaxa,taxaConstraints):
     return False
 
 def convertTaxaConstraintsToFastAccess(taxaConstraints):
-    constraintsByLevel = defaultdict(set)
+    constraintsByLevel = {}
     for name,level in taxaConstraints:
+        if level not in constraintsByLevel:
+            constraintsByLevel[level] = set()
+
         constraintsByLevel[level].add(name)
 
     return constraintsByLevel

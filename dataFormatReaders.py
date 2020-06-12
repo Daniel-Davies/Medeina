@@ -1,7 +1,7 @@
 import pathlib
 import pandas as pd
-from dataCleaning import cleanHeadTailTupleData, cleanSingleSpeciesString
-from config import LINK_METAS, PRECOMPUTER_STORE_PATH
+from .dataCleaning import cleanHeadTailTupleData, cleanSingleSpeciesString
+from .config import LINK_METAS, PRECOMPUTER_STORE_PATH
 import re
 import pickle 
 import itertools
@@ -9,8 +9,6 @@ import itertools
 def parseSpeciesInteractionCells(parsedSpecificationString):
     graphType = parsedSpecificationString['encoding']
     stringPairs = collectFromAppropriateHandlerMethod(graphType)
-    stringPairs = cleanHeadTailTupleData(stringPairs)
-    stringPairs = translateToSpeciesScientificFormatOnly(stringPairs)
     return stringPairs
 
 def collectFromAppropriateHandlerMethod(graphType):
@@ -120,7 +118,10 @@ def createPairDataFromMatrix(dataMatrix,predators,prey,metaPredators,metaPrey):
     consumableData = []
     for i in range(len(predators)):
         for j in range(len(prey)):
-            if int(dataMatrix[i][j]) != 0: 
+            handle = dataMatrix[i][j]
+            if not(isinstance(handle,int) or isinstance(handle,float)):
+                handle = int(float(re.sub('[^0-9]+','', dataMatrix[i][j])))
+            if handle != 0: 
                 consumableData.append((predators[i],prey[j],mergeRowColMetadataDicts(metaPredators,metaPrey,i,j)))
     return consumableData
 
@@ -136,28 +137,3 @@ def readContentAsDataFrame(dataPath,header='infer'):
     data = data.dropna(axis=1, how='all')
     data = data.dropna(axis=0, how='all')
     return data
-
-def translateWithPreComputedStore(stringPairs):
-    if preComputedStoreExists():
-        preComputedTranslationMapping = retrievePreComputedTranslationMapping()
-        stringPairs = createTranslatedStringPairs(stringPairs,preComputedTranslationMapping)
-    return stringPairs
-
-def createTranslatedStringPairs(stringPairs,preComputedTranslationMapping):
-    newStringPairs = []
-    for pred,prey,meta in stringPairs:
-        pred = cleanSingleSpeciesString(pred,False)
-        prey = cleanSingleSpeciesString(prey,False)
-        pred = translateStringToMapping(preComputedTranslationMapping,pred)
-        prey = translateStringToMapping(preComputedTranslationMapping,prey)
-        newInteractions = list(itertools.product(pred,prey))
-        newInteractions = list(map(lambda x: (x[0],x[1],meta), newInteractions))
-        newStringPairs.extend(newInteractions)
-    
-    return newStringPairs
-
-def translateToSpeciesScientificFormatOnly(cleanedHeadTailTupleData):
-    speciesOnly = list(itertools.chain(*cleanedHeadTailTupleData))
-    print(speciesOnlys)
-    return speciesOnly
-    

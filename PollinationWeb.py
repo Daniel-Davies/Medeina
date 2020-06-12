@@ -1,6 +1,6 @@
 
-from Web import Web 
-from config import *
+from .Web import Web 
+from .config import *
 
 class PollinationWeb(Web):
     def __init__(self,path=BASEDIR,*args,**kwargs):

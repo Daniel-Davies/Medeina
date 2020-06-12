@@ -1,5 +1,5 @@
-from Web import Web 
-from config import *
+from .Web import Web 
+from .config import *
 
 class TrophicWeb(Web):
     def __init__(self,path=BASEDIR,*args,**kwargs):
