@@ -50,8 +50,9 @@ class MedeinaCumulativeApplication:
         existingStringNames = WebObj.stringNames
         for s in species:
             if s not in speciesWithTaxonomy:
-                idx = existingStringNames[s]
-                speciesWithTaxonomy[s] = existingTaxaDict[idx]
+                if s in existingStringNames:
+                    idx = existingStringNames[s]
+                    speciesWithTaxonomy[s] = existingTaxaDict[idx]
         
     def getMissingTaxaFromAPI(self,species,WebObj):
         species = list(set(species) - set(WebObj.stringNames.keys()))
