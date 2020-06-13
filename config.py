@@ -12,8 +12,10 @@ IDTRACKER = 'numericCounter-b2ca94aee362f455a41493a0d28b98bc5074065b0f96cbb95028
 import os.path
 
 my_path = os.path.abspath(os.path.dirname(__file__))
-path = os.path.join(my_path, 'CompressedWebStore')
-BASEDIR = path
+
+ROOT = my_path
+ZIPDIR = os.path.join(my_path,'CompressedWebStore.zip')
+BASEDIR = os.path.join(my_path, 'CompressedWebStore')
 
 TAXA_OF_INTEREST = ['kingdom','phylum','order','class','family','genus']
 

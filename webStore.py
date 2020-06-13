@@ -6,9 +6,21 @@ import pickle
 from .common import writeObjToDateStore, retrieveObjFromStore
 from .exportTools import denormaliseData
 import csv
+import zipfile
 
 class WebStore:
     def __init__(self,storePath=BASEDIR):
+        if storePath == BASEDIR and not path.exists(BASEDIR):
+            if path.exists(ZIPDIR):
+                try:
+                    print("Decompressing Pre-Indexed Interaction Store")
+                    with zipfile.ZipFile(ZIPDIR, 'r') as zip_ref:
+                        zip_ref.extractall(ROOT)
+                    os.remove(ZIPDIR)
+                except Exception as e:
+                    print("Could not decompress store")
+                    print("Store currently empty")
+            else: print("Store currently empty")
         self.storePath = storePath
         requiredFiles = [DATASETS,WEB,TAXA,LINKS,EXCEPTIONS,REALNAMES]
         for file_ in requiredFiles: self.assureExistence(file_) 
