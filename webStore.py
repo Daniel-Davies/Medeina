@@ -13,7 +13,8 @@ class WebStore:
         if storePath == BASEDIR and not path.exists(BASEDIR):
             if path.exists(ZIPDIR):
                 try:
-                    print("Decompressing Pre-Indexed Interaction Store")
+                    print("Detected first time use...")
+                    print("Decompressing Pre-Indexed Interaction Store...")
                     with zipfile.ZipFile(ZIPDIR, 'r') as zip_ref:
                         zip_ref.extractall(ROOT)
                     os.remove(ZIPDIR)
