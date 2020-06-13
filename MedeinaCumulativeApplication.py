@@ -167,9 +167,7 @@ class MedeinaCumulativeApplication:
                 if stringResource[predator] not in taxaBasedInteractions:
                     taxaBasedInteractions[stringResource[predator]] = defaultdict(list)
                 
-                if not len(taxaBasedInteractions[stringResource[predator]]) == 0 and \
-                   not len(taxaBasedInteractions[stringResource[prey]]) == 0:
-                    
+                if not (len(stringResource[predator]) == 0 or len(stringResource[prey]) == 0):
                     taxaBasedInteractions[stringResource[predator]][stringResource[prey]].extend(sourceList)
 
         interactions[IDTRACKER] = tmp
