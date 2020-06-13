@@ -31,6 +31,7 @@ class MedeinaCumulativeApplication:
         self.stringNames = {v:k for k,v in WebObj.stringNames.items()}
         self.links = WebObj.linkMetas
         self.datasets = WebObj.datasetMetas
+
         return self.handleApplication(WebObj,speciesWithTaxonomy,taxaLevel)
 
     def indexSpeciesWithTaxaData(self,species,WebObj):
@@ -165,7 +166,11 @@ class MedeinaCumulativeApplication:
                 sourceList = interactions[predator][prey]
                 if stringResource[predator] not in taxaBasedInteractions:
                     taxaBasedInteractions[stringResource[predator]] = defaultdict(list)
-                taxaBasedInteractions[stringResource[predator]][stringResource[prey]].extend(sourceList)
+                
+                if not len(taxaBasedInteractions[stringResource[predator]]) == 0 and \
+                   not len(taxaBasedInteractions[stringResource[prey]]) == 0:
+                    
+                    taxaBasedInteractions[stringResource[predator]][stringResource[prey]].extend(sourceList)
 
         interactions[IDTRACKER] = tmp
         return taxaBasedInteractions
@@ -204,10 +209,10 @@ class MedeinaCumulativeApplication:
     def audit(self,filepath=None):        
         invertedLinkIndex = self.buildLinkIndex()
         fileDumpStruct = []
-        fileDumpStruct.append(['Link Predator','Link Prey','Evidence Consumer','Evidence Prey','Interaction Type','Evidenced By','Location'])
+        fileDumpStruct.append(['Link Predator','Link Prey','Evidence Consumer','Evidence Prey','Interaction Type','Evidenced By','Location','dId'])
         for predator,prey in self.linkEvidence.keys():
             evidencingIDs = self.linkEvidence[(predator,prey)]
-            fileDumpStruct.extend(self.handleSingleInteractionEvidence(evidencingIDs, invertedLinkIndex,predator,prey))
+            fileDumpStruct.extend(self.handleSingleInteractionEvidence(evidencingIDs,invertedLinkIndex,predator,prey))
         
         if filepath is not None:
             self.saveAuditDataToFile(fileDumpStruct,filepath)
@@ -234,7 +239,7 @@ class MedeinaCumulativeApplication:
                     locationString.append(location['country'])
                 
             locationString = ",".join(locationString)
-            fileDumpStruct.append([predator,prey,orgPred,orgPrey,interactionType,evidencedBy,locationString])
+            fileDumpStruct.append([predator,prey,orgPred,orgPrey,interactionType,evidencedBy,locationString,dId])
         
         return fileDumpStruct
     
