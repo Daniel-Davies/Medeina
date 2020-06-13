@@ -2,6 +2,5 @@
 
 commit back:
 
-- issue with forced addition of meta-data on matrix readers
-- issue with int('4.1')
-- define how to deal with markers like '<0.02'
+- getDId function
+- mention relying on the API as bad; e.g. bryozoa returning all the way down to family
