@@ -16,7 +16,7 @@ def saveNewData(parsedSpecificationString):
     stringHeadTailData = cleanHeadTailTupleData(stringHeadTailData)
     speciesMappingToId = indexTranslatedSpecies(stringHeadTailData,parsedSpecificationString)
     stringHeadTailData = filterUnindexableSpecies(stringHeadTailData,speciesMappingToId,parsedSpecificationString)
-    writeInteractionLinks(stringHeadTailData,dId,parsedSpecificationString['storageLocation'])
+    writeInteractionLinks(stringHeadTailData,dId,parsedSpecificationString)
 
 def filterUnindexableSpecies(species,speciesMappingToId,parsedSpecificationString):
     directory = parsedSpecificationString['storageLocation']
@@ -39,7 +39,8 @@ def createNewDatasetRecord(parsedSpecificationString):
     writeObjToDateStore(parsedSpecificationString['storageLocation'],DATASETS,existing)
     return newId
 
-def writeInteractionLinks(consumableData,dId,directory):
+def writeInteractionLinks(consumableData,dId,parsedSpecificationString):
+    directory = parsedSpecificationString['storageLocation']
     existingWeb = retrieveObjFromStore(directory,WEB)
     existingLinks = retrieveObjFromStore(directory,LINKS)
     currentLinkId = existingWeb[IDTRACKER]

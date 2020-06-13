@@ -46,6 +46,11 @@ class WebStore:
             writer = csv.writer(f)
             writer.writerows([headings])
             writer.writerows(rowsByList)
+    
+    @staticmethod
+    def preLoad():
+        return 42
+
 
 
 

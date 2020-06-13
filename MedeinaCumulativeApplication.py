@@ -2,7 +2,7 @@ from .dataCleaning import cleanSingleSpeciesString
 import networkx as nx
 from .common import *
 from collections import defaultdict
-from .interactionParser import *
+from .externalAPIs import retrieveTaxonomicDataFromAPI
 import itertools
 import csv
 
@@ -25,6 +25,7 @@ class MedeinaCumulativeApplication:
         self.taxaLevel = taxaLevel
         species = list(map(cleanSingleSpeciesString,species))
         speciesWithTaxonomy = self.indexSpeciesWithTaxaData(species,WebObj)
+        species = list(speciesWithTaxonomy.keys())
         self.speciesLen = len(speciesWithTaxonomy)
         self.interactionWeb = WebObj.interactions
         self.stringNames = {v:k for k,v in WebObj.stringNames.items()}
@@ -41,7 +42,7 @@ class MedeinaCumulativeApplication:
     def findAndIndexNewSpecies(self,species,WebObj,speciesWithTaxonomy):
         newlyEnteredSpeciesResults = self.getMissingTaxaFromAPI(species,WebObj)
         for name,valid,taxaDict in newlyEnteredSpeciesResults:
-            if not valid: continue
+            if not valid and len(taxaDict)==0: continue
             speciesWithTaxonomy[name] = taxaDict
     
     def indexRecordedSpecies(self,species,WebObj,speciesWithTaxonomy):
@@ -49,20 +50,13 @@ class MedeinaCumulativeApplication:
         existingStringNames = WebObj.stringNames
         for s in species:
             if s not in speciesWithTaxonomy:
-                print(s)
                 idx = existingStringNames[s]
                 speciesWithTaxonomy[s] = existingTaxaDict[idx]
         
     def getMissingTaxaFromAPI(self,species,WebObj):
         species = list(set(species) - set(WebObj.stringNames.keys()))
-        responses = []
-        for i in range(0,len(species),APIMAX):
-            print("Indexing records " + str(i) + " to " + str(min(len(species),i+APIMAX)) + " [of "+str(len(species))+"]")
-            responses.extend(callAPIOnDataList(species[i:i+APIMAX]))
+        return retrieveTaxonomicDataFromAPI(species,False)
 
-        speciesResponses = list(map(processSingleResponse,responses))
-        return list(filter(lambda x: x[1],speciesResponses))
-    
     def handleApplication(self,WebObj,speciesWithTaxa,taxaLevel):
         genericInteractions = self.handleNonExceptionSpecies(WebObj,speciesWithTaxa,taxaLevel)
         taxaBasedInteractions = self.handleExceptionSpecies(WebObj,speciesWithTaxa)

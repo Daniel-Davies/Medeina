@@ -22,12 +22,16 @@ def collectFromAppropriateHandlerMethod(graphType):
     return stringPairs
     
 def formatPairData(graphType):
-    df = readContentAsDataFrame(graphType['path'])
-    predators = df[graphType['head']].values.tolist()
-    prey = df[graphType['tail']].values.tolist()
-    metas = retrieveUserProvidedPairMetaData(df,graphType)
-    consumableData = list(zip(predators,prey,metas))
-    return consumableData
+    try:
+        df = readContentAsDataFrame(graphType['path'])
+        predators = df[graphType['head']].values.tolist()
+        prey = df[graphType['tail']].values.tolist()
+        metas = retrieveUserProvidedPairMetaData(df,graphType)
+        consumableData = list(zip(predators,prey,metas))
+        return consumableData
+    except Exception as e:
+        print(str(e))
+        return []
 
 def retrieveUserProvidedPairMetaData(df, graphType):
     df['metas'] = df.apply(lambda x: {item: x[graphType[item]] for item in LINK_METAS if item in graphType},axis=1)

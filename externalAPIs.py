@@ -10,18 +10,18 @@ from .common import mostCommonInList
 def translateToSpeciesScientificFormatOnly(cleanedHeadTailTupleData):
     speciesList = list(set(itertools.chain(*keepInteractionPartOnly(cleanedHeadTailTupleData))))
     speciesMapping = EcoNameTranslator().translate(speciesList)
-    cleanedHeadTailTupleData = map(lambda x: \
+    cleanedHeadTailTupleData = list(map(lambda x: \
                                     (speciesMapping[x[0]][1], speciesMapping[x[1]][1],x[2]), \
                                     cleanedHeadTailTupleData \
-                               )
-    cleanedHeadTailTupleData = map(lambda x: \
+                               ))
+    cleanedHeadTailTupleData = list(map(lambda x: \
                                     (list(itertools.product(x[0],x[1])),x[2]), \
                                     cleanedHeadTailTupleData \
-                               )
-    cleanedHeadTailTupleData = map(lambda x: 
+                               ))
+    cleanedHeadTailTupleData = list(map(lambda x: 
                                     [(pred,prey,x[1]) for pred,prey in x[0]], \
                                     cleanedHeadTailTupleData \
-                               )
+                               ))
     cleanedHeadTailTupleData = list(itertools.chain(*cleanedHeadTailTupleData))
     cleanedHeadTailTupleData = makeUnique(cleanedHeadTailTupleData)
     return cleanedHeadTailTupleData
