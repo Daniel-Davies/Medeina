@@ -34,3 +34,5 @@ commit back:
 
 - getDId function
 - mention relying on the API as bad; e.g. bryozoa returning all the way down to family
+- Need a smart way of detecting whether the input is garbage
+- Need to update to use modern version of the EcoNameTranslator
