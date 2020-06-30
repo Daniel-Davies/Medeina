@@ -1,0 +1,7 @@
+pycountry
+pandas
+taxon_parser
+networkx
+numpy
+msgpack
+EcoNameTranslator
