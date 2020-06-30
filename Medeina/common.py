@@ -17,7 +17,8 @@ def retrieveObjFromStore(directory,name):
     
     return existing
 
-def mostCommonInList(L):
+def mostCommonInList(L,defaultBlank=''):
+  if len(L) == 0: return defaultBlank
   SL = sorted((x, i) for i, x in enumerate(L))
   groups = itertools.groupby(SL, key=operator.itemgetter(0))
   def _auxfun(g):

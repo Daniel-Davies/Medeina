@@ -60,11 +60,3 @@ class WebStore:
             writer.writerows([headings])
             writer.writerows(rowsByList)
     
-    @staticmethod
-    def preLoad():
-        return 42
-
-
-
-
-

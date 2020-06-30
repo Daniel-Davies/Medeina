@@ -97,7 +97,9 @@ def determineTaxonomicGaps(species,directory):
     return list(set(species) - set(stringNameMapper.keys()))
 
 def takeDatasetMetaData(parsedSpecificationString):
-    joinedMetas = {item: parsedSpecificationString[item] for item in parsedSpecificationString}
+    expected = set(['storageLocation','graphType'])
+    datasetMetas = list(set(parsedSpecificationString.keys()) - expected)
+    joinedMetas = {item: parsedSpecificationString[item] for item in datasetMetas}
     if 'location' in joinedMetas: joinedMetas['location'] = standardiseLocationData(joinedMetas['location'])
     return joinedMetas
 
@@ -111,4 +113,3 @@ def standardiseLocationData(location):
     country = mostCommonInList(indivLocations)
     return {'region': ",".join(indivLocations[::-1][:-1]), 'country':country}
 
-    
