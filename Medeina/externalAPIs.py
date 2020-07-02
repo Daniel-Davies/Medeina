@@ -9,6 +9,11 @@ from EcoNameTranslator.services.profileTaxonomy import profile_taxonomy
 
 #########Translation
 
+def retrieveTaxonomicDataFromAPI(species,includeInvalid):
+    index = classify(species)
+    index = indexToTuples(index)
+    return list(map(lambda x: (x[0],x[2]),index))
+
 def translateToSpeciesScientificFormatOnly(cleanedHeadTailTupleData):
     speciesList = list(set(itertools.chain(*keepInteractionPartOnly(cleanedHeadTailTupleData))))
     speciesMapping = translateSpeciesList(speciesList)
@@ -51,7 +56,7 @@ def enrichSpeciesToFullTaxonomy(index):
                         list(map(lambda y:\
                                 y[1][1],\
                                 list(\
-                                    classify(x[2]).items() \
+                                        classify(x[2]).items() \
                                     )\
                                 )\
                             )\
@@ -59,7 +64,7 @@ def enrichSpeciesToFullTaxonomy(index):
                 index)\
             )
     
-def decideTranslationOnGroupStats(rankedGrouping,rankedList):
+def decideTranslationOnGroupStats(rankedGrouping,taxaList):
     leading = rankedGrouping[0][1]
     total = sum([item[1] for item in rankedGrouping])
     if (leading / total) <= 0.75: 
@@ -67,7 +72,7 @@ def decideTranslationOnGroupStats(rankedGrouping,rankedList):
         if not all([(val[1] <= 0.1*total and leading >= 0.5*total) for val in out]):
             return []
     
-    return takeSpeciesMatchingGroupOnly(rankedGrouping[0][0],'family',rankedList)
+    return takeSpeciesMatchingGroupOnly(rankedGrouping[0][0],'family',taxaList)
 
 def summaryStatsPerCategory(result):
     groups = {cat:list(map(lambda x: x.get(cat,''),result)) for cat in TAXA_OF_INTEREST}
@@ -88,12 +93,8 @@ def indexToTuples(index):
 def takeSpeciesMatchingGroupOnly(group,level,data):
     species = []
     for item in data:
-        if item[level] == group:
-            species.append(item['species'])
+        if item.get(level,'') == group:
+            if 'species' in item:
+                species.append(item['species'])
     
     return species
-
-def retrieveTaxonomicDataFromAPI(species,includeInvalid):
-    index = classify(species)
-    index = indexToTuples(index)
-    return list(map(lambda x: (x[0],x[2]),index))
