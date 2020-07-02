@@ -10,7 +10,7 @@ from collections import Counter
 
 def translateToSpeciesScientificFormatOnly(cleanedHeadTailTupleData):
     speciesList = list(set(itertools.chain(*keepInteractionPartOnly(cleanedHeadTailTupleData))))
-    speciesMapping = to_species(speciesList)
+    speciesMapping = translateSpeciesList(speciesList)
     cleanedHeadTailTupleData = list(map(lambda x: \
                                     (speciesMapping[x[0]][1], speciesMapping[x[1]][1],x[2]), \
                                     cleanedHeadTailTupleData \
