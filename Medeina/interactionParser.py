@@ -75,14 +75,14 @@ def indexTranslatedSpecies(species,parsedSpecificationString):
 
 def addSpeciesToStringNameMapping(validSpecies,directory):
     stringNames = retrieveObjFromStore(directory,REALNAMES)
-    for name,valid,taxa in validSpecies: stringNames[name] = len(stringNames) + 1
+    for name,taxa in validSpecies: stringNames[name] = len(stringNames) + 1
     writeObjToDateStore(directory, REALNAMES, stringNames)
     return stringNames
 
 def writeTaxonomicInformation(validSpeciesResponses,directory,stringNameMapper):
     existingTaxaData = retrieveObjFromStore(directory,TAXA)
     validSpeciesResponses = list(filter(lambda x: x[1],validSpeciesResponses))
-    for name,valid,taxaDict in validSpeciesResponses:
+    for name,taxaDict in validSpeciesResponses:
         sId = stringNameMapper[name]
         existingTaxaData[sId] = taxaDict
     writeObjToDateStore(directory, TAXA, existingTaxaData)
