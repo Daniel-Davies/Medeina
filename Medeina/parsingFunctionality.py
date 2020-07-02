@@ -1,4 +1,3 @@
-
 def makeUnique(headTailDataWMeta):
     seen = set()
     newData = {}

@@ -145,13 +145,10 @@ def interactionGenerator(val,interactions):
 def filterStringNamesByTaxaConstraints(stringNames,taxaConstraints,taxa):
     newStringNames = {}
     taxaConstraints = convertTaxaConstraintsToFastAccess(taxaConstraints)
-    
     for name,sId in stringNames.items():
         speciesTaxa = taxa[sId]
-        speciesTaxa['species'] = name
         if matchesConstraints(speciesTaxa,taxaConstraints):
             newStringNames[name] = sId 
-        del speciesTaxa['species']
     
     return newStringNames
 
@@ -167,7 +164,9 @@ def filterUneededTaxa(taxa,newSpeciesList):
 
 def matchesConstraints(speciesTaxa,taxaConstraints):
     for group in taxaConstraints:
-        if speciesTaxa[group] in taxaConstraints[group]:
+        speciesGroupValue = speciesTaxa.get(group,'')
+        taxaConstraintGroup = taxaConstraints.get(group,set())
+        if speciesGroupValue in taxaConstraintGroup:
             return True
     return False
 
@@ -176,8 +175,9 @@ def convertTaxaConstraintsToFastAccess(taxaConstraints):
     for name,level in taxaConstraints:
         if level not in constraintsByLevel:
             constraintsByLevel[level] = set()
-
-        constraintsByLevel[level].add(name)
+        
+        if name != '' and level != '':
+            constraintsByLevel[level].add(name)
 
     return constraintsByLevel
 
@@ -194,21 +194,4 @@ def filterInvalidInteractions(interactions,stringNames):
             if len(newInteractions[predator]) == 0:
                 del newInteractions[predator] 
     return newInteractions
-
-def filterInvalidLinks(linkMetas, interactions):
-    validLinkIds = crushInteractionsToIdsOnly(interactions)
-    newMetas = {}
-    for idx,val in linkMetas.items():
-        if idx in validLinkIds:
-            newMetas[idx] = val 
-    
-    return validLinkIds
-
-def crushInteractionsToIdsOnly(interactions):
-    idx = []
-    for predator in interactions:
-        for prey in interactions[predator]:
-            idx.extend(interactions[predator][prey])
-    
-    return set(idx)
 
