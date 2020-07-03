@@ -7,4 +7,4 @@ python:
   - "3.8"
 # command to run tests
 script:
-  - pytest --verbose --disable-warnings --ignore setup.py
+  - python -m pytest --verbose --disable-warnings --ignore setup.py
