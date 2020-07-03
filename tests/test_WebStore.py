@@ -63,14 +63,14 @@ def testThatIncorrectSpecStringThrows(test_patch_read):
         instance = WebStore()
         instance.parseUserInputToStandardJsonString({})
         assert 1 == 1
-    except ExceptionType:
+    except Exception as e:
         assert 1 == 2
     
     try:
         instance = WebStore()
         instance.parseUserInputToStandardJsonString("")
         assert 1 == 1
-    except ExceptionType:
+    except Exception as e:
         assert 1 == 2
 
 
