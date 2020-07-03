@@ -253,33 +253,6 @@ def getSupportingLargeWebObj():
     }
     return WebObj
 
-def getSupportingSmallWebObj():
-    WebObj = TempWebClass()
-    WebObj.taxa = {
-            1:{'family':'felidae'},
-            2:{'family':'ursus'},
-            3:{'family':'felidae'},
-            4:{'family':'canidae'},
-            5:{'family':'felidae'},
-    }
-    WebObj.stringNames = {
-            'puma concolor': 1,
-            'ursus arctos': 2,
-            'panthera tigris': 3,
-            'panthera leo': 4,
-            'acinonyx jubatus': 5,
-    }
-
-    WebObj.interactions = {
-        IDTRACKER:41,
-        1:{2:[1]},
-        2:{3:[2,3]},
-        3:{1:[4,5,6],4:[26,31],8:[32]},
-        4:{},
-        5:{1:[20,15],10:[33]}
-    }
-    return WebObj
-
 def testBuildingTaxaBasedInteractionsLarge():
     WebObj = getSupportingLargeWebObj()
     mca = MedeinaCumulativeApplication('dir')
@@ -459,7 +432,188 @@ def testHandlingOfNonExceptedSpeciesLarge():
         'felis catus': {'family':'felidae','species':'felis catus'},
         'panthera onca': {'family':'felidae','species':'panthera onca'},
     }
-
     interactions = mca.handleNonExceptionSpecies(WebObj,speciesWithTaxa,'species')
     expected = [('ursus arctos', 'panthera tigris'),('vulpes vulpes', 'ursus arctos'),('vulpes vulpes', 'panthera onca'),('canis lupus', 'ursus maritimus'),('ursus maritimus', 'ursus arctos'),('ursus maritimus', 'panthera tigris'),('felis catus', 'vulpes vulpes')]
     assert interactions == expected
+    speciesWithTaxa = {
+        'ursus arctos': {'family':'ursus','species':'ursus arctos'},
+        'ursus maritimus': {'family':'ursus','species':'ursus maritimus'}
+    }
+    interactions = mca.handleNonExceptionSpecies(WebObj,speciesWithTaxa,'family')
+    expected = [('ursus arctos', 'ursus arctos'),('ursus arctos', 'ursus maritimus'),('ursus maritimus', 'ursus arctos'),('ursus maritimus', 'ursus maritimus')]
+    
+    assert interactions == expected
+
+def testHandlingOfNonExceptedSpeciesSmall():
+    WebObj = getSupportingSmallWebObj()
+    WebObj.taxaExceptions = {}
+    mca = MedeinaCumulativeApplication('dir')
+    speciesWithTaxa = {
+        'panthera tigris': {'family':'felidae','species':'panthera tigris'},
+        'acinonyx jubatus': {'family':'felidae','species':'acinonyx jubatus'},
+        'panthera leo': {'family':'felidae','species':'panthera leo'},
+    }
+    interactions = mca.handleNonExceptionSpecies(WebObj,speciesWithTaxa,'species')
+    expected = [('panthera tigris', 'acinonyx jubatus'), ('acinonyx jubatus', 'panthera leo')]
+    assert interactions == expected
+    speciesWithTaxa = {
+        'ursus arctos': {'family':'ursus','species':'ursus arctos'},
+        'ursus maritimus': {'family':'ursus','species':'ursus maritimus'}
+    }
+    interactions = mca.handleNonExceptionSpecies(WebObj,speciesWithTaxa,'family')
+    expected = []
+    assert interactions == expected
+
+def testHandlingOfNonExceptedSpeciesInvalid():
+    WebObj = getSupportingInvalidNamesWebObj()
+    WebObj.taxaExceptions = {}
+    mca = MedeinaCumulativeApplication('dir')
+    expected = []
+    speciesWithTaxa = {
+        'ursus arctos': {'family':'','species':'ursus arctos'},
+        '': {'family':'ursus','species':'ursus maritimus'},
+        '':{'family':'felidae','species':''}
+    }
+    assert mca.handleNonExceptionSpecies(WebObj,speciesWithTaxa,'species') == expected
+    assert IDTRACKER in WebObj.interactions
+
+def testInvertingNameTranslator():
+    outputFromAPI = {
+        'panthera tigris': ['panthera tigris',['panthera tigris']],
+        'ursus':['ursus',['ursus arctos','ursus maritimus','ursus americanus']],
+        'blackbird':['blackbird',['turdus merula']]
+    }
+    mca = MedeinaCumulativeApplication('dir')
+    expected = ({'panthera tigris': 'panthera tigris',
+                'turdus merula': 'blackbird',
+                'ursus americanus': 'ursus',
+                'ursus arctos': 'ursus',
+                'ursus maritimus': 'ursus'},
+                ['panthera tigris',
+                'ursus arctos',
+                'ursus maritimus',
+                'ursus americanus',
+                'turdus merula'])
+    assert mca.invertNameTranslation(outputFromAPI) == expected
+
+def testInvertingNameTranslatorIncludingInvalid():
+    outputFromAPI = {
+        'panthera tigris': ['panthera tigris',['panthera tigris']],
+        'ursus':['ursus',['ursus arctos','ursus maritimus','ursus americanus','']],
+        'blackbird':['blackbird',[]],
+        'vulpes': ['vulpes',['']]
+    }
+    mca = MedeinaCumulativeApplication('dir')
+    expected = ({'panthera tigris': 'panthera tigris',
+                'ursus americanus': 'ursus',
+                'ursus arctos': 'ursus',
+                'ursus maritimus': 'ursus'},
+                ['panthera tigris',
+                'ursus arctos',
+                'ursus maritimus',
+                'ursus americanus',])
+    assert mca.invertNameTranslation(outputFromAPI) == expected
+
+@patch.object(sys.modules['Medeina.MedeinaCumulativeApplication'], 'retrieveTaxonomicDataFromAPI')
+def testIndexingOfSpeciesAllNew(patch_apiCall):
+    class TempWebClass:
+        def __init__(self):
+            self.stringNames = {}
+            self.taxa = {}
+    translatedSpecies = [
+        ('panthera tigris',True,{'family':'A'}),
+        ('ursus arctos',True,{'family':'B'}),
+        ('turdus merula',True,{'family':'C'}),
+        ('ursus americanus',True,{'family':'D'}),
+        ('ursus maritimus',True,{'family':'E'})   
+    ]
+    WebObj = TempWebClass()
+    patch_apiCall.return_value = translatedSpecies
+    mca = MedeinaCumulativeApplication('dir')
+    data = ['panthera tigris','ursus arctos','ursus maritimus','ursus americanus','turdus merula']
+    expected = {
+        'panthera tigris': {'family':'A'},
+        'ursus arctos':{'family':'B'},
+        'turdus merula':{'family':'C'},
+        'ursus americanus': {'family':'D'},
+        'ursus maritimus': {'family':'E'}   
+    }
+    assert mca.indexSpeciesWithTaxaData(data,WebObj) == expected
+    APISpeciesInput,strictParam = patch_apiCall.call_args[0]
+    assert strictParam == False
+    assert set(APISpeciesInput) == set(data)
+
+@patch.object(sys.modules['Medeina.MedeinaCumulativeApplication'], 'retrieveTaxonomicDataFromAPI')
+def testIndexingOfSpeciesAllExisting(patch_apiCall):
+    class TempWebClass:
+        def __init__(self):
+            self.taxa = {
+                1: {'family':'A'},
+                2:{'family':'B'},
+                3:{'family':'C'},
+                4: {'family':'D'},
+                5: {'family':'E'}   
+            }
+            self.stringNames = {
+                'panthera tigris': 1,
+                'ursus arctos': 2,
+                'turdus merula': 3,
+                'ursus americanus': 4,
+                'ursus maritimus': 5
+            }
+
+    translatedSpecies = [
+        ('panthera tigris',True,{'nkdakda':'A'}),
+        ('ursus arctos',True,{'adssakd':'B'}),
+        ('turdus merula',True,{'dasdsa':'C'}),
+        ('ursus americanus',True,{'dassakdsa':'D'}),
+        ('ursus maritimus',True,{'odsksa':'E'})   
+    ]
+    WebObj = TempWebClass()
+    patch_apiCall.return_value = translatedSpecies
+    mca = MedeinaCumulativeApplication('dir')
+    data = ['panthera tigris','ursus arctos','ursus maritimus','ursus americanus','turdus merula']
+    expected = {
+        'panthera tigris': {'family':'A'},
+        'ursus arctos':{'family':'B'},
+        'turdus merula':{'family':'C'},
+        'ursus americanus': {'family':'D'},
+        'ursus maritimus': {'family':'E'}   
+    }
+    assert mca.indexSpeciesWithTaxaData(data,WebObj) == expected
+    patch_apiCall.assert_not_called()
+
+@patch.object(sys.modules['Medeina.MedeinaCumulativeApplication'], 'retrieveTaxonomicDataFromAPI')
+def testIndexingOfSpeciesMixed(patch_apiCall):
+    class TempWebClass:
+        def __init__(self):
+            self.taxa = {
+                1: {'family':'A'},
+                2:{'family':'B'},
+                3:{'family':'C'},
+            }
+            self.stringNames = {
+                'panthera tigris': 1,
+                'ursus arctos': 2,
+                'turdus merula': 3,
+            }
+
+    translatedSpecies = [
+        ('ursus americanus',True,{'family':'D'}),
+        ('ursus maritimus',True,{'family':'E'})   
+    ]
+    WebObj = TempWebClass()
+    patch_apiCall.return_value = translatedSpecies
+    mca = MedeinaCumulativeApplication('dir')
+    data = ['panthera tigris','ursus arctos','ursus maritimus','ursus americanus','turdus merula']
+    expected = {
+        'panthera tigris': {'family':'A'},
+        'ursus arctos':{'family':'B'},
+        'turdus merula':{'family':'C'},
+        'ursus americanus': {'family':'D'},
+        'ursus maritimus': {'family':'E'}   
+    }
+    assert mca.indexSpeciesWithTaxaData(data,WebObj) == expected
+    APISpeciesInput,strictParam = patch_apiCall.call_args[0]
+    assert strictParam == False
+    assert set(APISpeciesInput) == set(['ursus americanus','ursus maritimus'])

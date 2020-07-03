@@ -41,6 +41,7 @@ class MedeinaCumulativeApplication:
         allSpecies = []
         for userProvidedName in standardisedSpecies:
             propCleanedName, possibleSpecies = standardisedSpecies[userProvidedName]
+            possibleSpecies = list(filter(lambda x: x != '',possibleSpecies))
             allSpecies.extend(possibleSpecies)
             for s in possibleSpecies:
                 invertedIndex[s] = userProvidedName
@@ -66,10 +67,11 @@ class MedeinaCumulativeApplication:
             if s not in speciesWithTaxonomy:
                 if s in existingStringNames:
                     idx = existingStringNames[s]
-                    speciesWithTaxonomy[s] = existingTaxaDict[idx]
+                    speciesWithTaxonomy[s] = existingTaxaDict.get(idx,{'species':s})
         
     def getMissingTaxaFromAPI(self,species,WebObj):
         species = list(set(species) - set(WebObj.stringNames.keys()))
+        if len(species) == 0: return []
         return retrieveTaxonomicDataFromAPI(species,False)
 
     def handleApplication(self,WebObj,speciesWithTaxa,taxaLevel):
@@ -160,6 +162,7 @@ class MedeinaCumulativeApplication:
                 if speciesWithTaxa[potentialPrey][taxaLevel] in preyOfSpecies:
                     genericInteractions.append((s,potentialPrey))
                     evidencingIDs = interactionsAtUserDefinedLevel[nameAtUserTaxaLevel][speciesWithTaxa[potentialPrey][taxaLevel]]
+                    print(s,potentialPrey,evidencingIDs)
                     self.linkEvidence[(s,potentialPrey)].extend(evidencingIDs)
 
         return genericInteractions
