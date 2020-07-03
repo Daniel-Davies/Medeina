@@ -6,12 +6,12 @@ import copy
 import msgpack
 
 def writeObjToDateStore(directory,name,obj):
-    with open(f'{directory}/{name}','wb') as fh:
+    with open("{path}/{fname}".format(path=directory,fname=name),'wb') as fh:
         packed = msgpack.packb(obj)
         fh.write(packed)
 
 def retrieveObjFromStore(directory,name):
-    with open(f'{directory}/{name}','rb') as fh:
+    with open("{path}/{fname}".format(path=directory,fname=name),'rb') as fh:
         byteData = fh.read()
         existing = msgpack.unpackb(byteData,strict_map_key=False)
     

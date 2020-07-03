@@ -28,7 +28,7 @@ class WebStore:
         self.initialiseLinkIdTracker()
 
     def assureExistence(self,file_):
-        if not path.exists(f'{self.storePath}/{file_}'):
+        if not path.exists("{path}/{fname}".format(path=self.storePath,fname=file_)):
             writeObjToDateStore(self.storePath,file_,{})
 
     def initialiseLinkIdTracker(self):
