@@ -1,4 +1,5 @@
 [![Build Status](https://travis-ci.com/Daniel-Davies/Medeina.svg?branch=master)](https://travis-ci.com/Daniel-Davies/Medeina)
+[![codecov](https://codecov.io/gh/Daniel-Davies/Medeina/branch/master/graph/badge.svg)](https://codecov.io/gh/Daniel-Davies/Medeina)
 
 # Medeina
 
