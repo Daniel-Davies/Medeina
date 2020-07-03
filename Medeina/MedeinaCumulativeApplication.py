@@ -5,7 +5,6 @@ from collections import defaultdict
 from .externalAPIs import translateSpeciesList, retrieveTaxonomicDataFromAPI
 import itertools
 import csv
-import time 
 
 class MedeinaCumulativeApplication:
     def __init__(self,storePath):
