@@ -177,12 +177,18 @@ class MedeinaCumulativeApplication:
         for predator in interactions:
             for prey in interactions[predator]:
                 sourceList = interactions[predator][prey]
-                if stringResource[predator] not in taxaBasedInteractions:
+                if stringResource.get(predator,'') not in taxaBasedInteractions and len(stringResource.get(predator,'')) > 0:
                     taxaBasedInteractions[stringResource[predator]] = defaultdict(list)
                 
-                if not (len(stringResource[predator]) == 0 or len(stringResource[prey]) == 0):
+                if not (len(stringResource.get(predator,'')) == 0 or len(stringResource.get(prey,'')) == 0):
                     taxaBasedInteractions[stringResource[predator]][stringResource[prey]].extend(sourceList)
-
+        deleteList = []
+        for predator in taxaBasedInteractions:
+            if len(taxaBasedInteractions[predator]) == 0:
+                deleteList.append(predator)
+        
+        for item in deleteList:
+            del taxaBasedInteractions[item]
         interactions[IDTRACKER] = tmp
         return taxaBasedInteractions
     
@@ -202,7 +208,7 @@ class MedeinaCumulativeApplication:
         return list(map(lambda x: ((x[0],x[1]),(self.scientificToUser[x[0]],self.scientificToUser[x[1]])),baseList))
     
     def to_graph_original(self,directed=False):
-        originalLinks = list(map(lambda x: x[1],to_list_original()))
+        originalLinks = list(map(lambda x: x[1],self.to_list_original()))
         nodes = set(itertools.chain(*originalLinks))
         G = nx.Graph()
         if directed: G = nx.DiGraph()
@@ -233,7 +239,7 @@ class MedeinaCumulativeApplication:
     
     def to_matrix_original(self):
         G = self.to_graph_original()
-        nodeOrder = self.interactionsToNodes()
+        nodeOrder = list(map(lambda x: self.scientificToUser[x],self.interactionsToNodes()))
         return nx.to_numpy_matrix(G,nodelist=nodeOrder), nodeOrder
     
     def interactionsToNodes(self):
@@ -269,7 +275,7 @@ class MedeinaCumulativeApplication:
                 locationString.append(location['region'])
 
             if 'country' in location:
-                    locationString.append(location['country'])
+                locationString.append(location['country'])
                 
             locationString = ",".join(locationString)
             fileDumpStruct.append([predator,prey,orgPred,orgPrey,interactionType,evidencedBy,locationString,dId])

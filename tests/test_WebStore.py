@@ -52,7 +52,9 @@ def testTrackerIdInitWhenNew(patch_exists,test_patch_write,test_patch_read,patch
     instance = WebStore('dir')
     test_patch_write.assert_not_called()
 
-def testThatIncorrectSpecStringThrows():
+@patch('Medeina.webStore.retrieveObjFromStore')
+def testThatIncorrectSpecStringThrows(test_patch_read):
+    test_patch_read.return_value = {}
     with pytest.raises(ValueError):
         instance = WebStore()
         instance.parseUserInputToStandardJsonString([])
