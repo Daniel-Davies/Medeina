@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.com/Daniel-Davies/Medeina.svg?branch=master)](https://travis-ci.com/Daniel-Davies/Medeina)
+
 # Medeina
 
 Medeina is a python package for automating the construction of species interaction webs, such as food webs, or pollination webs.The package allows both management of a data store of interactions, and functions needed to make use of the data store in building a cumulative interaction web. For convenience, Medeina comes with a pre-loaded data store of 2,740,185 interactions, coming from 38,865 unique species, which is de-compressed and readily available from the first use. A list of the datasets that come native with Medeina can be found [here](https://github.com/Daniel-Davies/MedeinaPublicationTests) under 'dataset_lists'.
