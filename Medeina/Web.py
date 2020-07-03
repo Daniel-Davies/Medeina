@@ -1,4 +1,4 @@
-from .common import *
+from .common import writeObjToDateStore,retrieveObjFromStore,serialise,prettyPrintDict
 from .config import *
 from .dataCleaning import cleanSingleSpeciesString
 from .filterFunctions import *
@@ -49,13 +49,12 @@ class Web:
     def filter_by_dataset_id(self,dIds):
         self.validateDIds(dIds)
         self.logbook.append({'datasetIdFilter':dIds})
-        newWeb = self.replicateFoodWeb()
+        newWeb = self.replicateWeb()
         newWeb.datasetMetas = filterDatasetByDIds(self.datasetMetas,dIds)
         newWeb.linkMetas = filterLinksMetasByDIds(self.linkMetas,dIds)
         newWeb.interactions = filterInteractionsByLinkIds(self.interactions,newWeb.linkMetas)
         newWeb.stringNames = filterStringNamesByInteractions(self.stringNames,newWeb.interactions)
         newWeb.taxa = filterNoLongerNeededTaxa(self.taxa,newWeb.stringNames)
-        # newWeb.taxaExceptions = filterNoLongerNeededTaxaExceptions(self.taxaExceptions,newWeb.stringNames)
         return newWeb
 
     def validateDIds(self,dIds):
@@ -117,7 +116,7 @@ class Web:
     def filterOnMetaData(self,acceptedList,strict,callHandler):
         newLinkMetas, newDatasetMetas = callHandler(self.linkMetas,acceptedList,self.datasetMetas,strict)
 
-        newWeb = self.replicateFoodWeb()
+        newWeb = self.replicateWeb()
         newWeb.linkMetas = newLinkMetas
         newWeb.datasetMetas = newDatasetMetas
         newWeb.interactions = filterInteractionsByLinkIds(self.interactions,newWeb.linkMetas)
@@ -128,14 +127,14 @@ class Web:
     def filterByTaxa(self,taxaConstraints):
         self.validateTaxaConstraints(taxaConstraints)
         self.logbook.append({'taxaConstraint':taxaConstraints})
-        newWeb = self.replicateFoodWeb()
+        newWeb = self.replicateWeb()
         newWeb.stringNames = filterStringNamesByTaxaConstraints(self.stringNames,taxaConstraints,self.taxa)
         newWeb.taxa = filterUneededTaxa(self.taxa,newWeb.stringNames)
         newWeb.interactions = filterInvalidInteractions(self.interactions,newWeb.stringNames)
         newWeb.linkMetas = filterInvalidLinks(self.linkMetas,newWeb.interactions) 
         return newWeb
     
-    def replicateFoodWeb(self):
+    def replicateWeb(self):
         names = ['interactions','taxaExceptions','taxa','linkMetas','datasetMetas','stringNames','logbook']
         newData = list(map(serialise,[self.interactions,self.taxaExceptions,self.taxa,self.linkMetas,self.datasetMetas,self.stringNames,self.logbook]))
         kwargsDict = dict(zip(names,newData))

@@ -195,3 +195,19 @@ def filterInvalidInteractions(interactions,stringNames):
                 del newInteractions[predator] 
     return newInteractions
 
+def filterInvalidLinks(linkMetas, interactions):
+    validLinkIds = crushInteractionsToIdsOnly(interactions)
+    newMetas = {}
+    for idx,val in linkMetas.items():
+        if idx in validLinkIds:
+            newMetas[idx] = val 
+    
+    return newMetas
+
+def crushInteractionsToIdsOnly(interactions):
+    idx = []
+    for predator in interactions:
+        for prey in interactions[predator]:
+            idx.extend(interactions[predator][prey])
+    
+    return set(idx)
