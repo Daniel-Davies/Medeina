@@ -22,5 +22,5 @@ setuptools.setup(
          "Operating System :: OS Independent",
      ],
      keywords = ['Food Webs', 'Species networks', 'Cumulative Networks'],
-     install_requires=['pycountry','taxon_parser','networkx','numpy','msgpack','EcoNameTranslator','requests','pandas;python_version>="3.5"','pandas<0.21;python_version<"3.5"']
+     install_requires=['pycountry','taxon_parser','networkx','numpy','msgpack','EcoNameTranslator','requests','pandas']
  )
