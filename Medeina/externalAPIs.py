@@ -6,6 +6,7 @@ from .parsingFunctionality import *
 from .config import *
 from .common import mostCommonInList
 
+
 def retrieveTaxonomicDataFromAPI(species, includeInvalid):
     index = classify(species)
     index = indexToTuples(index)
