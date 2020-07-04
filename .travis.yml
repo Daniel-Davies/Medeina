@@ -11,6 +11,6 @@ before_install:
   - pip install -U pip
   - python setup.py install
 script:
-  - python -m pytest --cov=./
+  - python -m pytest --cov=Medeina
 after_success:
   - codecov
