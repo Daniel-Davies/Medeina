@@ -30,8 +30,7 @@ class WebStore:
         self.initialiseLinkIdTracker()
 
     def assureExistence(self, file_):
-        if not path.exists(
-                "{path}/{fname}".format(path=self.storePath, fname=file_)):
+        if not path.exists("{path}/{fname}".format(path=self.storePath, fname=file_)):
             writeObjToDateStore(self.storePath, file_, {})
 
     def initialiseLinkIdTracker(self):
@@ -46,9 +45,9 @@ class WebStore:
 
     def add_interactions(self, userIn, includeInvalid=False):
         jsonFormattedSpecificationString = self.parseUserInputToStandardJsonString(
-            userIn)
-        parsedSpecificationString = json.loads(
-            jsonFormattedSpecificationString)
+            userIn
+        )
+        parsedSpecificationString = json.loads(jsonFormattedSpecificationString)
         parsedSpecificationString["storageLocation"] = self.storePath
         parsedSpecificationString["includeInvalid"] = includeInvalid
         saveNewData(parsedSpecificationString)

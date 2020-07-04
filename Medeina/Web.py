@@ -16,8 +16,7 @@ class Web:
         self.storePath = path
         if len(kwargs) == 0:
             self.interactions = retrieveObjFromStore(self.storePath, WEB)
-            self.taxaExceptions = retrieveObjFromStore(
-                self.storePath, EXCEPTIONS)
+            self.taxaExceptions = retrieveObjFromStore(self.storePath, EXCEPTIONS)
             self.taxa = retrieveObjFromStore(self.storePath, TAXA)
             self.linkMetas = retrieveObjFromStore(self.storePath, LINKS)
             self.datasetMetas = retrieveObjFromStore(self.storePath, DATASETS)
@@ -39,8 +38,7 @@ class Web:
         species, consumer, resource = self.ensureValidExceptionInput(
             species, consumer, resource
         )
-        self.taxaExceptions[species] = {
-            "consumer": consumer, "resource": resource}
+        self.taxaExceptions[species] = {"consumer": consumer, "resource": resource}
         if save:
             txe = retrieveObjFromStore(self.storePath, EXCEPTIONS)
             txe[species] = {"consumer": consumer, "resource": resource}
@@ -107,8 +105,7 @@ class Web:
         newCountries = []
         for item in loc:
             try:
-                newCountries.append(
-                    pycountry.countries.search_fuzzy(item)[0].name)
+                newCountries.append(pycountry.countries.search_fuzzy(item)[0].name)
             except BaseException:
                 raise ValueError("Country not recognised")
 
@@ -163,8 +160,7 @@ class Web:
         newWeb.interactions = filterInvalidInteractions(
             self.interactions, newWeb.stringNames
         )
-        newWeb.linkMetas = filterInvalidLinks(
-            self.linkMetas, newWeb.interactions)
+        newWeb.linkMetas = filterInvalidLinks(self.linkMetas, newWeb.interactions)
         return newWeb
 
     def replicateWeb(self):

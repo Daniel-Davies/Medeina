@@ -16,8 +16,9 @@ def retrieveTaxonomicDataFromAPI(species, includeInvalid):
 
 
 def translateToSpeciesScientificFormatOnly(cleanedHeadTailTupleData):
-    speciesList = list(set(itertools.chain(
-        *keepInteractionPartOnly(cleanedHeadTailTupleData))))
+    speciesList = list(
+        set(itertools.chain(*keepInteractionPartOnly(cleanedHeadTailTupleData)))
+    )
     speciesMapping = translateSpeciesList(speciesList)
     cleanedHeadTailTupleData = list(
         map(
@@ -81,17 +82,16 @@ def decideTranslationOnGroupStats(rankedGrouping, taxaList):
     total = sum([item[1] for item in rankedGrouping])
     if (leading / total) <= 0.75:
         out = rankedGrouping[1:]
-        if not all([(val[1] <= 0.1 * total and leading >= 0.5 * total)
-                    for val in out]):
+        if not all([(val[1] <= 0.1 * total and leading >= 0.5 * total) for val in out]):
             return []
 
-    return takeSpeciesMatchingGroupOnly(
-        rankedGrouping[0][0], "family", taxaList)
+    return takeSpeciesMatchingGroupOnly(rankedGrouping[0][0], "family", taxaList)
 
 
 def summaryStatsPerCategory(result):
-    groups = {cat: list(map(lambda x: x.get(cat, ""), result))
-              for cat in TAXA_OF_INTEREST}
+    groups = {
+        cat: list(map(lambda x: x.get(cat, ""), result)) for cat in TAXA_OF_INTEREST
+    }
     summaryStats = {k: grouping(v) for (k, v) in groups.items()}
     if "" in summaryStats:
         del summaryStats[""]

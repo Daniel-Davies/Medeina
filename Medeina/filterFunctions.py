@@ -16,8 +16,7 @@ def filterInteractionsByLinkIds(dict_, linkMetas):
     tmp = dict_[IDTRACKER]
     del dict_[IDTRACKER]
     newInteractions[IDTRACKER] = tmp
-    newInteractions = createNewInteractionDict(
-        newInteractions, dict_, linkMetas)
+    newInteractions = createNewInteractionDict(newInteractions, dict_, linkMetas)
     dict_[IDTRACKER] = tmp
     return newInteractions
 
@@ -25,10 +24,7 @@ def filterInteractionsByLinkIds(dict_, linkMetas):
 def createNewInteractionDict(newInteractions, dict_, linkMetas):
     for predator in dict_:
         for prey in dict_[predator]:
-            newAddition = list(
-                filter(
-                    lambda x: x in linkMetas,
-                    dict_[predator][prey]))
+            newAddition = list(filter(lambda x: x in linkMetas, dict_[predator][prey]))
             if len(newAddition) != 0:
                 if predator not in newInteractions:
                     newInteractions[predator] = {}
@@ -120,27 +116,19 @@ def filterMetasByInteraction(linkMetas, interactions, datasetMetas, strict):
         "interactionType",
     )
     newDataset = filterDatasetMetaData(
-        datasetMetas,
-        strict,
-        interactions,
-        interactionGenerator,
-        "interactionType")
+        datasetMetas, strict, interactions, interactionGenerator, "interactionType"
+    )
     return newLinks, newDataset
 
 
-def filterLinkMetaData(
-        linkMetas,
-        datasetMetas,
-        acceptedList,
-        strict,
-        generator,
-        tag):
+def filterLinkMetaData(linkMetas, datasetMetas, acceptedList, strict, generator, tag):
     acceptedList = set(acceptedList)
     newLinks, unaccountedFor = takeMatchingFromLinkMetas(
         linkMetas, acceptedList, generator, tag
     )
     newLinks, unaccountedFor = takeMatchingFromDatasetMetas(
-        datasetMetas, newLinks, linkMetas, acceptedList, unaccountedFor, generator, tag)
+        datasetMetas, newLinks, linkMetas, acceptedList, unaccountedFor, generator, tag
+    )
     if not strict:
         newLinks = inferRemainingLinks(newLinks, unaccountedFor, linkMetas)
     return newLinks
@@ -157,8 +145,7 @@ def filterDatasetMetaData(datasetMetas, strict, acceptedList, generator, tag):
 
     if strict:
         return newDataSetMetas
-    newDataSetMetas = inferRemainingLinks(
-        newDataSetMetas, unaccountedFor, datasetMetas)
+    newDataSetMetas = inferRemainingLinks(newDataSetMetas, unaccountedFor, datasetMetas)
     return newDataSetMetas
 
 
@@ -175,13 +162,8 @@ def takeMatchingFromLinkMetas(linkMetas, obs, generator, keyName):
 
 
 def takeMatchingFromDatasetMetas(
-        datasetMetas,
-        newLinks,
-        linkMetas,
-        acceptedList,
-        unaccountedFor,
-        generator,
-        tag):
+    datasetMetas, newLinks, linkMetas, acceptedList, unaccountedFor, generator, tag
+):
     stillUnnacountedFor = []
     for link in unaccountedFor:
         linkMetaSingle = linkMetas[link]

@@ -11,10 +11,7 @@ def containsEmpty(tup):
 
 
 def cleanSingleTuple(tup):
-    return (
-        cleanSingleSpeciesString(
-            tup[0]), cleanSingleSpeciesString(
-            tup[1]), tup[2])
+    return (cleanSingleSpeciesString(tup[0]), cleanSingleSpeciesString(tup[1]), tup[2])
 
 
 def cleanSingleSpeciesString(species, strict=True):

@@ -61,12 +61,10 @@ def retrieveUserProvidedPairMetaData(df, graphType):
 def formatMatrixData(graphType):
     df = readContentAsDataFrame(graphType["path"], header=None)
     nameDepth = graphType.get("nameDepth", 100)
-    headingCoord = parseTupleStringToTuple(
-        graphType.get("headingCorner", "(1,1)"))
+    headingCoord = parseTupleStringToTuple(graphType.get("headingCorner", "(1,1)"))
     dataCoord = parseTupleStringToTuple(graphType.get("dataCorner", "(2,2)"))
     dataMatrix = handleData(dataCoord, df).values.tolist()
-    predators = extractPredatorsFromFile(
-        dataCoord, headingCoord, df, nameDepth)
+    predators = extractPredatorsFromFile(dataCoord, headingCoord, df, nameDepth)
     metaPredators = extractColBasedMetadata(graphType, df, dataCoord)
     prey = extractPreyFromFile(dataCoord, headingCoord, df, nameDepth)
     metaPrey = extractRowBasedMetadata(graphType, df, dataCoord)
@@ -107,17 +105,10 @@ def extractColBasedMetadata(graphType, df, dataCoord):
     )
 
 
-def processMatrixMetaDataAtOrientation(
-        graphType,
-        orientation,
-        processFn,
-        startOfData):
+def processMatrixMetaDataAtOrientation(graphType, orientation, processFn, startOfData):
     userProvidedColData = list(
-        filter(
-            lambda x: x["orientation"] == orientation,
-            graphType.get(
-                "metaData",
-                [])))
+        filter(lambda x: x["orientation"] == orientation, graphType.get("metaData", []))
+    )
     userProvidedColData = list(
         map(lambda x: (x["name"], int(x["index"]) - 1), userProvidedColData)
     )
@@ -162,7 +153,7 @@ def handlePredatorData(dataCoord, headingCoord, df):
     length = dataCoord[0] - headingCoord[0]
 
     offsetY = dataCoord[1] - headingCoord[1]
-    return df.iloc[headingCoord[1] + offsetY:, start: start + length]
+    return df.iloc[headingCoord[1] + offsetY :, start : start + length]
 
 
 def handlePreyData(dataCoord, headingCoord, df):
@@ -170,7 +161,7 @@ def handlePreyData(dataCoord, headingCoord, df):
     length = dataCoord[1] - headingCoord[1]
 
     offsetX = dataCoord[0] - headingCoord[0]
-    return df.iloc[start: start + length, headingCoord[0] + offsetX:]
+    return df.iloc[start : start + length, headingCoord[0] + offsetX :]
 
 
 def parseTupleStringToTuple(coord):
@@ -182,12 +173,7 @@ def parseTupleStringToTuple(coord):
     return (int(x) - 1, int(y) - 1)
 
 
-def createPairDataFromMatrix(
-        dataMatrix,
-        predators,
-        prey,
-        metaPredators,
-        metaPrey):
+def createPairDataFromMatrix(dataMatrix, predators, prey, metaPredators, metaPrey):
     assert len(predators) == len(dataMatrix)
     assert len(prey) == len(dataMatrix[0])
     consumableData = []
@@ -198,8 +184,12 @@ def createPairDataFromMatrix(
                 handle = int(float(re.sub("[^0-9]+", "", dataMatrix[i][j])))
             if handle != 0:
                 consumableData.append(
-                    (predators[i], prey[j], mergeRowColMetadataDicts(
-                        metaPredators, metaPrey, i, j), ))
+                    (
+                        predators[i],
+                        prey[j],
+                        mergeRowColMetadataDicts(metaPredators, metaPrey, i, j),
+                    )
+                )
     return consumableData
 
 
@@ -207,12 +197,9 @@ def mergeRowColMetadataDicts(metaPredators, metaPrey, predIndex, preyIndex):
     individualPredatorMetas = list(
         map(lambda x: {x[0]: x[1][predIndex]}, metaPredators)
     )
-    individualPreyMetas = list(
-        map(lambda x: {x[0]: x[1][preyIndex]}, metaPrey))
+    individualPreyMetas = list(map(lambda x: {x[0]: x[1][preyIndex]}, metaPrey))
     predatorMetasAsSingeDict = {
         k: v for d in individualPredatorMetas for k, v in d.items()
     }
-    preyMetasAsSingleDict = {
-        k: v for d in individualPreyMetas for k,
-        v in d.items()}
+    preyMetasAsSingleDict = {k: v for d in individualPreyMetas for k, v in d.items()}
     return {**predatorMetasAsSingeDict, **preyMetasAsSingleDict}

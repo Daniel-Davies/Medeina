@@ -6,6 +6,7 @@ from .common import *
 from .externalAPIs import translateSpeciesList, retrieveTaxonomicDataFromAPI
 from .dataCleaning import cleanSingleSpeciesString
 
+
 class MedeinaCumulativeApplication:
     def __init__(self, storePath):
         self.interactionStore = []
@@ -29,8 +30,7 @@ class MedeinaCumulativeApplication:
         scientificToUserProvided, scientificNames = self.invertNameTranslation(
             standardisedSpeciesDict
         )
-        speciesWithTaxonomy = self.indexSpeciesWithTaxaData(
-            scientificNames, WebObj)
+        speciesWithTaxonomy = self.indexSpeciesWithTaxaData(scientificNames, WebObj)
         self.scientificToUser = scientificToUserProvided
         self.speciesLen = len(speciesWithTaxonomy)
         self.interactionWeb = WebObj.interactions
@@ -58,8 +58,7 @@ class MedeinaCumulativeApplication:
         return speciesWithTaxonomy
 
     def findAndIndexNewSpecies(self, species, WebObj, speciesWithTaxonomy):
-        newlyEnteredSpeciesResults = self.getMissingTaxaFromAPI(
-            species, WebObj)
+        newlyEnteredSpeciesResults = self.getMissingTaxaFromAPI(species, WebObj)
         for name, valid, taxaDict in newlyEnteredSpeciesResults:
             if not valid and len(taxaDict) == 0:
                 continue
@@ -72,8 +71,7 @@ class MedeinaCumulativeApplication:
             if s not in speciesWithTaxonomy:
                 if s in existingStringNames:
                     idx = existingStringNames[s]
-                    speciesWithTaxonomy[s] = existingTaxaDict.get(
-                        idx, {"species": s})
+                    speciesWithTaxonomy[s] = existingTaxaDict.get(idx, {"species": s})
 
     def getMissingTaxaFromAPI(self, species, WebObj):
         species = list(set(species) - set(WebObj.stringNames.keys()))
@@ -85,16 +83,14 @@ class MedeinaCumulativeApplication:
         genericInteractions = self.handleNonExceptionSpecies(
             WebObj, speciesWithTaxa, taxaLevel
         )
-        taxaBasedInteractions = self.handleExceptionSpecies(
-            WebObj, speciesWithTaxa)
+        taxaBasedInteractions = self.handleExceptionSpecies(WebObj, speciesWithTaxa)
         self.lenExcepted = len(taxaBasedInteractions)
         self.lenGeneric = len(genericInteractions)
         totalInteractions = [*genericInteractions, *taxaBasedInteractions]
         self.interactionStore = totalInteractions
 
     def handleExceptionSpecies(self, WebObj, speciesWithTaxa):
-        predatorExceptionIDs = self.handlePredatorExceptions(
-            WebObj, speciesWithTaxa)
+        predatorExceptionIDs = self.handlePredatorExceptions(WebObj, speciesWithTaxa)
         preyExceptionIDs = self.handlePreyExceptions(WebObj, speciesWithTaxa)
         return [*predatorExceptionIDs, *preyExceptionIDs]
 
@@ -138,21 +134,15 @@ class MedeinaCumulativeApplication:
         return exceptedInteractions
 
     def addLinkEvidenceForPredExceptionInteraction(
-            self,
-            species,
-            potentialPrey,
-            interactionWeb,
-            targetTaxaValue,
-            WebObj,
-            taxaGroup):
+        self, species, potentialPrey, interactionWeb, targetTaxaValue, WebObj, taxaGroup
+    ):
         prey = interactionWeb[WebObj.stringNames[species]]
         taxa = WebObj.taxa
         for p in prey:
             compTaxaVal = taxa[p][taxaGroup]
             if compTaxaVal == targetTaxaValue:
                 evidencingIDs = interactionWeb[WebObj.stringNames[species]][p]
-                self.linkEvidence[(species, potentialPrey)
-                                  ].extend(evidencingIDs)
+                self.linkEvidence[(species, potentialPrey)].extend(evidencingIDs)
 
     def handlePreyExceptions(self, WebObj, speciesWithTaxa):
         exceptions = WebObj.taxaExceptions
@@ -177,9 +167,9 @@ class MedeinaCumulativeApplication:
                                 WebObj.stringNames[predator]
                             ][WebObj.stringNames[exceptedPrey]]
                             self.linkEvidence[(predator, potentialPrey)].extend(
-                                evidencingIDs)
-                            exceptedInteractions.append(
-                                (predator, potentialPrey))
+                                evidencingIDs
+                            )
+                            exceptedInteractions.append((predator, potentialPrey))
 
         return exceptedInteractions
 
@@ -195,8 +185,7 @@ class MedeinaCumulativeApplication:
         for predator in interactionWeb:
             for prey in interactionWeb[predator]:
                 if stringNames[prey] in predatorBucket:
-                    predatorBucket[stringNames[prey]].append(
-                        stringNames[predator])
+                    predatorBucket[stringNames[prey]].append(stringNames[predator])
         interactionWeb[IDTRACKER] = tmp
         return predatorBucket
 
@@ -211,13 +200,15 @@ class MedeinaCumulativeApplication:
         genericInteractions = []
         for s in genericSpecies:
             nameAtUserTaxaLevel = speciesWithTaxa[s][taxaLevel]
-            preyOfSpecies = set(interactionsAtUserDefinedLevel.get(
-                nameAtUserTaxaLevel, {}).keys()) - set([""])
+            preyOfSpecies = set(
+                interactionsAtUserDefinedLevel.get(nameAtUserTaxaLevel, {}).keys()
+            ) - set([""])
             for potentialPrey in genericSpecies:
                 if speciesWithTaxa[potentialPrey][taxaLevel] in preyOfSpecies:
                     genericInteractions.append((s, potentialPrey))
-                    evidencingIDs = interactionsAtUserDefinedLevel[
-                        nameAtUserTaxaLevel][speciesWithTaxa[potentialPrey][taxaLevel]]
+                    evidencingIDs = interactionsAtUserDefinedLevel[nameAtUserTaxaLevel][
+                        speciesWithTaxa[potentialPrey][taxaLevel]
+                    ]
                     print(s, potentialPrey, evidencingIDs)
                     self.linkEvidence[(s, potentialPrey)].extend(evidencingIDs)
 
@@ -225,15 +216,11 @@ class MedeinaCumulativeApplication:
 
     def nonExceptedSpecies(self, WebObj, speciesWithTaxa):
         exceptions = WebObj.taxaExceptions
-        return list(
-            filter(
-                lambda x: x not in exceptions,
-                speciesWithTaxa.keys()))
+        return list(filter(lambda x: x not in exceptions, speciesWithTaxa.keys()))
 
     def buildTaxaBasedInteractions(self, WebObj, taxaLevel):
         taxaBasedInteractions = {}
-        stringResource = self.determineAppropriateStringMapper(
-            WebObj, taxaLevel)
+        stringResource = self.determineAppropriateStringMapper(WebObj, taxaLevel)
         interactions = WebObj.interactions
         tmp = interactions[IDTRACKER]
         del interactions[IDTRACKER]
@@ -244,8 +231,7 @@ class MedeinaCumulativeApplication:
                     stringResource.get(predator, "") not in taxaBasedInteractions
                     and len(stringResource.get(predator, "")) > 0
                 ):
-                    taxaBasedInteractions[stringResource[predator]] = defaultdict(
-                        list)
+                    taxaBasedInteractions[stringResource[predator]] = defaultdict(list)
 
                 if not (
                     len(stringResource.get(predator, "")) == 0
@@ -273,8 +259,7 @@ class MedeinaCumulativeApplication:
         return stringResource
 
     def to_list(self):
-        return list(map(lambda x: (x[0], x[1]),
-                        list(set(self.interactionStore))))
+        return list(map(lambda x: (x[0], x[1]), list(set(self.interactionStore))))
 
     def to_list_original(self):
         baseList = self.to_list()
@@ -435,9 +420,7 @@ class MedeinaCumulativeApplication:
     def summary(self):
         print("Application complete")
         print("--------------------")
-        print("User provided " +
-              str(self.speciesLen) +
-              " unique, valid species")
+        print("User provided " + str(self.speciesLen) + " unique, valid species")
         print("Found " + str(len(self.linkEvidence)) + " unique interactions")
         print(
             "Captured "
@@ -462,13 +445,13 @@ class MedeinaCumulativeApplication:
             )
             return
         print(
-            "Percentage of user provided species involved in this application: " +
-            "{:.2f}".format(
-                (len(
-                    set(
-                        itertools.chain(
-                            *
-                            self.linkEvidence.keys()))) *
-                 100 /
-                 self.speciesLen)) +
-            "%")
+            "Percentage of user provided species involved in this application: "
+            + "{:.2f}".format(
+                (
+                    len(set(itertools.chain(*self.linkEvidence.keys())))
+                    * 100
+                    / self.speciesLen
+                )
+            )
+            + "%"
+        )

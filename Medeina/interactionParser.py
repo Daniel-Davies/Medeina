@@ -14,11 +14,9 @@ from .externalAPIs import (
 
 def saveNewData(parsedSpecificationString):
     dId = createNewDatasetRecord(parsedSpecificationString)
-    stringHeadTailData = parseSpeciesInteractionCells(
-        parsedSpecificationString)
+    stringHeadTailData = parseSpeciesInteractionCells(parsedSpecificationString)
     stringHeadTailData = makeUnique(stringHeadTailData)
-    stringHeadTailData = translateToSpeciesScientificFormatOnly(
-        stringHeadTailData)
+    stringHeadTailData = translateToSpeciesScientificFormatOnly(stringHeadTailData)
     stringHeadTailData = cleanHeadTailTupleData(stringHeadTailData)
     speciesMappingToId = indexTranslatedSpecies(
         stringHeadTailData, parsedSpecificationString
@@ -29,10 +27,7 @@ def saveNewData(parsedSpecificationString):
     writeInteractionLinks(stringHeadTailData, dId, parsedSpecificationString)
 
 
-def filterUnindexableSpecies(
-        species,
-        speciesMappingToId,
-        parsedSpecificationString):
+def filterUnindexableSpecies(species, speciesMappingToId, parsedSpecificationString):
     directory = parsedSpecificationString["storageLocation"]
     includeInvalid = parsedSpecificationString["includeInvalid"]
     return list(
@@ -86,8 +81,7 @@ def indexTranslatedSpecies(species, parsedSpecificationString):
     directory = parsedSpecificationString["storageLocation"]
     includeInvalid = parsedSpecificationString["includeInvalid"]
     species = list(set(itertools.chain(*keepInteractionPartOnly(species))))
-    validSpecies = getTaxaAndValidateNewNames(
-        species, directory, includeInvalid)
+    validSpecies = getTaxaAndValidateNewNames(species, directory, includeInvalid)
     if len(validSpecies) > 0:
         stringNames = addSpeciesToStringNameMapping(validSpecies, directory)
         writeTaxonomicInformation(validSpecies, directory, stringNames)
@@ -102,10 +96,7 @@ def addSpeciesToStringNameMapping(validSpecies, directory):
     return stringNames
 
 
-def writeTaxonomicInformation(
-        validSpeciesResponses,
-        directory,
-        stringNameMapper):
+def writeTaxonomicInformation(validSpeciesResponses, directory, stringNameMapper):
     existingTaxaData = retrieveObjFromStore(directory, TAXA)
     validSpeciesResponses = list(filter(lambda x: x[1], validSpeciesResponses))
     for name, taxaDict in validSpeciesResponses:
@@ -128,11 +119,9 @@ def determineTaxonomicGaps(species, directory):
 def takeDatasetMetaData(parsedSpecificationString):
     expected = set(["storageLocation", "graphType"])
     datasetMetas = list(set(parsedSpecificationString.keys()) - expected)
-    joinedMetas = {
-        item: parsedSpecificationString[item] for item in datasetMetas}
+    joinedMetas = {item: parsedSpecificationString[item] for item in datasetMetas}
     if "location" in joinedMetas:
-        joinedMetas["location"] = standardiseLocationData(
-            joinedMetas["location"])
+        joinedMetas["location"] = standardiseLocationData(joinedMetas["location"])
     return joinedMetas
 
 
