@@ -619,11 +619,11 @@ def testIndexingOfSpeciesAllNew(patch_apiCall):
             self.taxa = {}
 
     translatedSpecies = [
-        ("panthera tigris", True, {"family": "A"}),
-        ("ursus arctos", True, {"family": "B"}),
-        ("turdus merula", True, {"family": "C"}),
-        ("ursus americanus", True, {"family": "D"}),
-        ("ursus maritimus", True, {"family": "E"}),
+        ("panthera tigris", {"family": "A"}),
+        ("ursus arctos", {"family": "B"}),
+        ("turdus merula", {"family": "C"}),
+        ("ursus americanus", {"family": "D"}),
+        ("ursus maritimus", {"family": "E"}),
     ]
     WebObj = TempWebClass()
     patch_apiCall.return_value = translatedSpecies
@@ -715,8 +715,8 @@ def testIndexingOfSpeciesMixed(patch_apiCall):
             }
 
     translatedSpecies = [
-        ("ursus americanus", True, {"family": "D"}),
-        ("ursus maritimus", True, {"family": "E"}),
+        ("ursus americanus",{"family": "D"}),
+        ("ursus maritimus", {"family": "E"}),
     ]
     WebObj = TempWebClass()
     patch_apiCall.return_value = translatedSpecies

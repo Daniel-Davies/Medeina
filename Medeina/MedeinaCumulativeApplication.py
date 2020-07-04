@@ -59,7 +59,7 @@ class MedeinaCumulativeApplication:
 
     def findAndIndexNewSpecies(self, species, WebObj, speciesWithTaxonomy):
         newlyEnteredSpeciesResults = self.getMissingTaxaFromAPI(species, WebObj)
-        for name,taxaDict in newlyEnteredSpeciesResults:
+        for name, taxaDict in newlyEnteredSpeciesResults:
             speciesWithTaxonomy[name] = taxaDict
 
     def indexRecordedSpecies(self, species, WebObj, speciesWithTaxonomy):
