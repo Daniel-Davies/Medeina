@@ -1,5 +1,6 @@
 [![Build Status](https://travis-ci.com/Daniel-Davies/Medeina.svg?branch=master)](https://travis-ci.com/Daniel-Davies/Medeina)
 [![codecov](https://codecov.io/gh/Daniel-Davies/Medeina/branch/master/graph/badge.svg)](https://codecov.io/gh/Daniel-Davies/Medeina)
+[![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 
 # Medeina
 
