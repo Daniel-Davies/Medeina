@@ -6,9 +6,6 @@ from .parsingFunctionality import *
 from .config import *
 from .common import mostCommonInList
 
-# Translation
-
-
 def retrieveTaxonomicDataFromAPI(species, includeInvalid):
     index = classify(species)
     index = indexToTuples(index)
@@ -50,7 +47,7 @@ def translateSpeciesList(species):
     for k, (real, cleaned, lst) in enumerate(enrichedResults):
         groupingByFamily = summaryStatsPerCategory(lst).get("family", "")
         if len(groupingByFamily) < 2:
-            enrichedResults = (real, cleaned, oIndex[real][1])
+            enrichedResults[k] = (real, cleaned, oIndex[real][1])
         else:
             rankedGrouping = sorted(
                 groupingByFamily.items(), key=lambda x: x[1], reverse=True
