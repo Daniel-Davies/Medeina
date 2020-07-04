@@ -58,7 +58,18 @@ def translateSpeciesList(species):
                 cleaned,
                 decideTranslationOnGroupStats(rankedGrouping, lst),
             )
-
+    
+    enrichedResults = list(
+        map(
+            lambda x: (x[0],x[1],list(
+                map(
+                    lambda y: y.lower(),
+                    x[2]
+                )
+            )),
+            enrichedResults
+        )
+    )
     return dict(list(map(lambda x: [x[0], [*x[1:]]], enrichedResults)))
 
 

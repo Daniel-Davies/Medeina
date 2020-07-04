@@ -59,9 +59,7 @@ class MedeinaCumulativeApplication:
 
     def findAndIndexNewSpecies(self, species, WebObj, speciesWithTaxonomy):
         newlyEnteredSpeciesResults = self.getMissingTaxaFromAPI(species, WebObj)
-        for name, valid, taxaDict in newlyEnteredSpeciesResults:
-            if not valid and len(taxaDict) == 0:
-                continue
+        for name,taxaDict in newlyEnteredSpeciesResults:
             speciesWithTaxonomy[name] = taxaDict
 
     def indexRecordedSpecies(self, species, WebObj, speciesWithTaxonomy):
@@ -209,7 +207,6 @@ class MedeinaCumulativeApplication:
                     evidencingIDs = interactionsAtUserDefinedLevel[nameAtUserTaxaLevel][
                         speciesWithTaxa[potentialPrey][taxaLevel]
                     ]
-                    print(s, potentialPrey, evidencingIDs)
                     self.linkEvidence[(s, potentialPrey)].extend(evidencingIDs)
 
         return genericInteractions
