@@ -26,7 +26,7 @@ class MedeinaCumulativeApplication:
         if taxaLevel == "exact":
             taxaLevel = "species"
         self.taxaLevel = taxaLevel
-        standardisedSpeciesDict = translateSpeciesList(species)
+        standardisedSpeciesDict = self.convertInputToScientifcSpeciesNames(species,WebObj)
         scientificToUserProvided, scientificNames = self.invertNameTranslation(
             standardisedSpeciesDict
         )
@@ -38,6 +38,21 @@ class MedeinaCumulativeApplication:
         self.links = WebObj.linkMetas
         self.datasets = WebObj.datasetMetas
         self.handleApplication(WebObj, speciesWithTaxonomy, taxaLevel)
+    
+    def convertInputToScientifcSpeciesNames(self,species,WebObj):
+        standardisedSpeciesDict = {}
+        species = list(map(lambda x: (x,cleanSingleSpeciesString(x)),species))
+        requiredForTranslation = []
+        for original,cleaned in species:
+            if cleaned in WebObj.stringNames:
+                standardisedSpeciesDict[original] = [cleaned,[cleaned]]
+            else:
+                requiredForTranslation.append(original)
+        newSpeciesTranslationDict = translateSpeciesList(requiredForTranslation)
+        for item in newSpeciesTranslationDict:
+            cleanedByEcoNameTranslator, results = newSpeciesTranslationDict[item] 
+            standardisedSpeciesDict[item] = [cleanedByEcoNameTranslator,results]
+        return standardisedSpeciesDict
 
     def invertNameTranslation(self, standardisedSpecies):
         invertedIndex = {}
@@ -417,7 +432,7 @@ class MedeinaCumulativeApplication:
     def summary(self):
         print("Application complete")
         print("--------------------")
-        print("User provided " + str(self.speciesLen) + " unique, valid species")
+        print("User provided " + str(self.speciesLen) + " unique, valid species (Post Translation)")
         print("Found " + str(len(self.linkEvidence)) + " unique interactions")
         print(
             "Captured "
